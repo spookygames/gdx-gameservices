@@ -1,0 +1,64 @@
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+dependencies {
+    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+    testCompile "net.spookygames.gdx:gdx-nativefilechooser:1.0.0"
+}
+
+apply plugin: 'maven-publish'
+
+archivesBaseName = "$libName"
+
+configurations {
+    demo.extendsFrom testRuntime
+}
+
+task demoJar(type: Jar) {
+    classifier 'demo'
+    from sourceSets.test.output
+}
+
+artifacts {
+    demo demoJar
+}
+
+// Javadoc
+task javadocJar (type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+// Sources
+task sourcesJar (type : Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId "$libName"
+            from components.java
+
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+apply from: '../license.gradle'
+license.includes(["**/*.java"])
+
+apply from: '../publish.gradle'
+bintray.publications = ['maven']

@@ -1,0 +1,3 @@
+include 'gdx-gameservices', 'gdx-gameservices-googleplay', 'gdx-gameservices-playtomic', 'gdx-gameservices-gamecenter'
+
+rootProject.name = "gdx-gameservices-root"

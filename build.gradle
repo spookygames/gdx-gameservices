@@ -1,0 +1,32 @@
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.1-SNAPSHOT'
+    }
+}
+
+allprojects {
+
+    apply plugin: 'eclipse'
+
+    group = 'net.spookygames.gdx'
+    version = '0.0.1-SNAPSHOT'
+
+    ext {
+        gdxVersion = '1.9.4'
+        roboVMVersion = '2.3.1-SNAPSHOT'
+        libName = 'gdx-gameservices'
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "http://dl.bintray.com/spookygames/oss" }
+    }
+}
