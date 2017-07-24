@@ -49,11 +49,35 @@ public class GooglePlaySnapshotWrapper implements SavedGame {
     }
 
     @Override
+    public String getTitle() {
+        return wrapped.getTitle();
+    }
+
+    @Override
+    public String getDescription() {
+        return wrapped.getDescription();
+    }
+
+    @Override
+    public long getTimestamp() {
+        return wrapped.getLastModifiedTimestamp();
+    }
+
+    @Override
+    public long getPlayedTime() {
+        return wrapped.getPlayedTime();
+    }
+
+    @Override
     public String getDeviceName() {
         return wrapped.getDeviceName();
     }
 
     SnapshotMetadata getWrapped() {
         return wrapped;
+    }
+
+    public void merge(SavedGame other) {
+        // TODO
     }
 }

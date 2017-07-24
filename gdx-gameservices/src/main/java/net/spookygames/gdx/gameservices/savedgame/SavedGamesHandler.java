@@ -23,17 +23,15 @@
  */
 package net.spookygames.gdx.gameservices.savedgame;
 
-import java.nio.ByteBuffer;
-
 import net.spookygames.gdx.gameservices.ServiceCallback;
 
 public interface SavedGamesHandler {
 
 	void getSavedGames(ServiceCallback<Iterable<SavedGame>> callback);
 
-	void loadSavedGameData(SavedGame metadata, ServiceCallback<ByteBuffer> callback);
+	void loadSavedGameData(SavedGame metadata, ServiceCallback<byte[]> callback);
 
-	void submitSavedGame(SavedGame savedGame, ByteBuffer data, ServiceCallback<Void> callback);
+	void submitSavedGame(SavedGame savedGame, byte[] data, ServiceCallback<Void> callback);
 
 	void deleteSavedGame(SavedGame savedGame, ServiceCallback<Void> callback);
 

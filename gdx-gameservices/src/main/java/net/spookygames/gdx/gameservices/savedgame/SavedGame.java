@@ -29,6 +29,14 @@ public interface SavedGame {
 
 	String getName();
 
+	String getTitle();
+
+	String getDescription();
+
+	long getTimestamp();
+
+	long getPlayedTime();
+
 	String getDeviceName();
 
 }

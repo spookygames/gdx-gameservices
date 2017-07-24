@@ -21,47 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.spookygames.gdx.gameservices.playtomic;
+package net.spookygames.gdx.gameservices.achievement;
 
-import net.spookygames.gdx.gameservices.achievement.Achievement;
-import net.spookygames.gdx.gameservices.achievement.AchievementState;
+public enum AchievementState {
 
-public class PlaytomicAchievement implements Achievement {
-
-	private String achievement;
-	private String achievementkey;
-	private String achievementid;
-	private PlaytomicPlayer player;
-
-	public PlaytomicAchievement() {
-	}
-
-	@Override
-	public String getId() {
-		return achievementkey;
-	}
-
-	@Override
-	public String getName() {
-		return achievement;
-	}
-
-	public String getAchievementid() {
-		return achievementid;
-	}
-
-	public PlaytomicPlayer getPlayer() {
-		return player;
-	}
-
-	@Override
-	public AchievementState getState() {
-		return AchievementState.Unlocked;
-	}
-
-	@Override
-	public String toString() {
-		return "PlaytomicAchievement [id=" + getId() + ", name=" + getName() + "]";
-	}
+	Unlocked,
+	Locked,
+	Hidden
 
 }

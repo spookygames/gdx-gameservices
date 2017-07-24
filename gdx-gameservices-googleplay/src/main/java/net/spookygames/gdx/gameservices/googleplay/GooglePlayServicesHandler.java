@@ -70,7 +70,6 @@ import net.spookygames.gdx.gameservices.savedgame.SavedGame;
 import net.spookygames.gdx.gameservices.savedgame.SavedGamesHandler;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 
 public class GooglePlayServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
@@ -84,8 +83,27 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 
 	private ServiceCallback<Void> connectionCallback;
 
+	private int resolutionPolicy = Snapshots.RESOLUTION_POLICY_LAST_KNOWN_GOOD;
+
 	public GoogleApiClient getGoogleApiClient() {
 		return client;
+	}
+
+	/**
+	 * Get the current resolution policy that should handle {@link Snapshot} conflicts.
+	 * @return
+	 */
+	public int getResolutionPolicy() {
+		return resolutionPolicy;
+	}
+
+	/**
+	 * Set the resolution policy that should handle {@link Snapshot} conflicts.
+	 * Input a valid value from @{@link Snapshots} or suffer a hundred painful deaths.
+	 * @param resolutionPolicy the new resolution policy
+	 */
+	public void setResolutionPolicy(int resolutionPolicy) {
+		this.resolutionPolicy = resolutionPolicy;
 	}
 
 	// Lifecycle
@@ -287,6 +305,16 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		}
 	}
 
+	@Override
+	public String getPlayerId() {
+		return Games.Players.getCurrentPlayer(client).getPlayerId();
+	}
+
+	@Override
+	public String getPlayerName() {
+		return Games.Players.getCurrentPlayer(client).getDisplayName();
+	}
+
 	// Achievements
 
 	@Override
@@ -485,112 +513,155 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public void loadSavedGameData(SavedGame metadata, final ServiceCallback<ByteBuffer> callback) {
-		SnapshotMetadata properMetadata = extractMetadata(metadata);
-		loadSavedGameData(properMetadata, new ResultCallback<Snapshots.OpenSnapshotResult>() {
+	public void loadSavedGameData(SavedGame save, final ServiceCallback<byte[]> callback) {
+		extractMetadata(save, false, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
 			@Override
-			public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
-				Status status = openSnapshotResult.getStatus();
-				ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-				if (status.isSuccess()) {
-					Snapshot snapshot = openSnapshotResult.getSnapshot();
-					try {
-						// Too bad we stop to read all the content
-						ByteBuffer buffer = ByteBuffer.wrap(snapshot.getSnapshotContents().readFully());
-						callback.onSuccess(buffer, response);
-					} catch (IOException e) {
-						error(e.getLocalizedMessage());
-						callback.onFailure(response);
-					}
-				} else {
-					callback.onFailure(response);
+			public void onSuccess(SnapshotMetadata metadata, ServiceResponse response) {
+
+				PendingResult<Snapshots.OpenSnapshotResult> intent = Games.Snapshots.open(client, metadata, resolutionPolicy);
+
+				if (callback != null) {
+					intent.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
+						@Override
+						public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
+							Status status = openSnapshotResult.getStatus();
+							ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
+							if (status.isSuccess()) {
+								Snapshot snapshot = openSnapshotResult.getSnapshot();
+								try {
+									// We stop to read all the content
+									byte[] data = snapshot.getSnapshotContents().readFully();
+									callback.onSuccess(data, response);
+								} catch (IOException e) {
+									error(e.getLocalizedMessage());
+									callback.onFailure(response);
+								}
+							} else {
+								callback.onFailure(response);
+							}
+						}
+					});
 				}
+			}
+
+			@Override
+			public void onFailure(ServiceResponse response) {
+				if (callback != null)
+					callback.onFailure(response);
 			}
 		});
 	}
 
 	@Override
-	public void submitSavedGame(SavedGame metadata, final ByteBuffer data, final ServiceCallback<Void> callback) {
-		final SnapshotMetadata properMetadata = extractMetadata(metadata);
-
-		// Ok, this is coming ugly
-		// We'll first open in order to get former metadata (or create if none)
-		Games.Snapshots.open(client, metadata.getName(), true, Snapshots.RESOLUTION_POLICY_LAST_KNOWN_GOOD/* FIXME */)
-				.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
+	public void submitSavedGame(final SavedGame save, final byte[] data, final ServiceCallback<Void> callback) {
+		extractMetadata(save, true, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
 			@Override
-			public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
-				Status status = openSnapshotResult.getStatus();
-				ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-				if (status.isSuccess()) {
-					// Then and only then will we be able to manipulate our dear Snapshot object
-					Snapshot snapshot = openSnapshotResult.getSnapshot();
-
-					byte[] bytes = new byte[data.remaining()];
-					data.get(bytes);
-					snapshot.getSnapshotContents().writeBytes(bytes);
-
-					SnapshotMetadataChange metadataChange = new SnapshotMetadataChange.Builder()
-							.fromMetadata(properMetadata)
-							.build();
-
-					PendingResult<Snapshots.CommitSnapshotResult> intent = Games.Snapshots.commitAndClose(client, snapshot, metadataChange);
-					if (callback != null) {
-						intent.setResultCallback(new ResultCallback<Snapshots.CommitSnapshotResult>() {
+			public void onSuccess(final SnapshotMetadata properMetadata, ServiceResponse response) {
+				// Ok, this is coming ugly
+				// We'll first open in order to get former metadata (or create if none)
+				Games.Snapshots.open(client, save.getName(), true, resolutionPolicy)
+						.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
 							@Override
-							public void onResult(@NonNull Snapshots.CommitSnapshotResult commitSnapshotResult) {
-								Status status = commitSnapshotResult.getStatus();
+							public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
+								Status status = openSnapshotResult.getStatus();
 								ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
 								if (status.isSuccess()) {
-									callback.onSuccess(null, response);
+									// Then and only then will we be able to manipulate our dear Snapshot object
+									Snapshot snapshot = openSnapshotResult.getSnapshot();
+
+									snapshot.getSnapshotContents().writeBytes(data);
+
+									SnapshotMetadataChange metadataChange = new SnapshotMetadataChange.Builder()
+											.fromMetadata(properMetadata)
+											.build();
+
+									PendingResult<Snapshots.CommitSnapshotResult> intent = Games.Snapshots.commitAndClose(client, snapshot, metadataChange);
+									if (callback != null) {
+										intent.setResultCallback(new ResultCallback<Snapshots.CommitSnapshotResult>() {
+											@Override
+											public void onResult(@NonNull Snapshots.CommitSnapshotResult commitSnapshotResult) {
+												Status status = commitSnapshotResult.getStatus();
+												ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
+												if (status.isSuccess()) {
+													callback.onSuccess(null, response);
+												} else {
+													callback.onFailure(response);
+												}
+											}
+										});
+									}
 								} else {
 									callback.onFailure(response);
 								}
 							}
 						});
-					}
-				} else {
+			}
+
+			@Override
+			public void onFailure(ServiceResponse response) {
+				if (callback != null)
 					callback.onFailure(response);
-				}
 			}
 		});
 	}
 
 	@Override
-	public void deleteSavedGame(SavedGame metadata, final ServiceCallback<Void> callback) {
-		SnapshotMetadata properMetadata = extractMetadata(metadata);
-		PendingResult<Snapshots.DeleteSnapshotResult> intent = Games.Snapshots.delete(client, properMetadata);
+	public void deleteSavedGame(SavedGame save, final ServiceCallback<Void> callback) {
+		extractMetadata(save, false, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
+			@Override
+			public void onSuccess(SnapshotMetadata properMetadata, ServiceResponse response) {
+				PendingResult<Snapshots.DeleteSnapshotResult> intent = Games.Snapshots.delete(client, properMetadata);
 
-		if (callback != null) {
-			intent.setResultCallback(new ResultCallback<Snapshots.DeleteSnapshotResult>() {
-				@Override
-				public void onResult(@NonNull Snapshots.DeleteSnapshotResult deleteSnapshotResult) {
-					Status status = deleteSnapshotResult.getStatus();
-					ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-					if (status.isSuccess()) {
-						callback.onSuccess(null, response);
-					} else {
-						callback.onFailure(response);
-					}
+				if (callback != null) {
+					intent.setResultCallback(new ResultCallback<Snapshots.DeleteSnapshotResult>() {
+						@Override
+						public void onResult(@NonNull Snapshots.DeleteSnapshotResult deleteSnapshotResult) {
+							Status status = deleteSnapshotResult.getStatus();
+							ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
+							if (status.isSuccess()) {
+								callback.onSuccess(null, response);
+							} else {
+								callback.onFailure(response);
+							}
+						}
+					});
 				}
-			});
-		}
+			}
+
+			@Override
+			public void onFailure(ServiceResponse response) {
+				if (callback != null)
+					callback.onFailure(response);
+			}
+		});
 	}
 
-	private void loadSavedGameData(SnapshotMetadata metadata, ResultCallback<Snapshots.OpenSnapshotResult> callback) {
-		// TODO Define resolution
-		int resolutionStrategy = Snapshots.RESOLUTION_POLICY_LAST_KNOWN_GOOD;
-		PendingResult<Snapshots.OpenSnapshotResult> intent = Games.Snapshots.open(client, metadata, resolutionStrategy);
-
-		if (callback != null) {
-			intent.setResultCallback(callback);
-		}
-	}
-
-	private static SnapshotMetadata extractMetadata(SavedGame savedGame) {
+	private void extractMetadata(final SavedGame savedGame, boolean createIfNeeded, int resolutionPolicy, final ServiceCallback<SnapshotMetadata> callback) {
 		if (savedGame instanceof GooglePlaySnapshotWrapper) {
-			return ((GooglePlaySnapshotWrapper) savedGame).getWrapped();
+			callback.onSuccess(((GooglePlaySnapshotWrapper) savedGame).getWrapped(), null);
 		} else {
-			throw new RuntimeException("GooglePlayServicesHandler is only able to handle saved games coming from Google Play Games");
+			// Open from API in order to get proper metadata (or create if none)
+			Games.Snapshots.open(client, savedGame.getName(), createIfNeeded, resolutionPolicy)
+					.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
+						@Override
+						public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
+							Status status = openSnapshotResult.getStatus();
+							ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
+							if (status.isSuccess()) {
+								// Then and only then will we be able to manipulate our dear Snapshot object
+								Snapshot snapshot = openSnapshotResult.getSnapshot();
+								SnapshotMetadata metadata = snapshot.getMetadata();
+
+								// Merge savedGame into metadata
+								GooglePlaySnapshotWrapper newOne = new GooglePlaySnapshotWrapper(metadata);
+								newOne.merge(savedGame);
+
+								callback.onSuccess(metadata, response);
+							} else {
+								callback.onFailure(response);
+							}
+						}
+					});
 		}
 	}
 

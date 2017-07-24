@@ -30,5 +30,9 @@ public interface ConnectionHandler {
 	void login(ServiceCallback<Void> callback);
 	
 	void logout();
+	
+	String getPlayerId();
+	
+	String getPlayerName();
 
 }

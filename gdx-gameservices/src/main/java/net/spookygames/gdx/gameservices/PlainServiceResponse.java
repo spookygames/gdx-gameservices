@@ -21,47 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.spookygames.gdx.gameservices.playtomic;
+package net.spookygames.gdx.gameservices;
 
-import net.spookygames.gdx.gameservices.achievement.Achievement;
-import net.spookygames.gdx.gameservices.achievement.AchievementState;
+import net.spookygames.gdx.gameservices.ServiceResponse;
 
-public class PlaytomicAchievement implements Achievement {
+public class PlainServiceResponse implements ServiceResponse {
 
-	private String achievement;
-	private String achievementkey;
-	private String achievementid;
-	private PlaytomicPlayer player;
+	private boolean successful;
+	private int errorCode;
+	private String errorMessage;
 
-	public PlaytomicAchievement() {
+	public PlainServiceResponse() {
+		super();
+	}
+
+	public PlainServiceResponse(boolean successful, int errorCode, String errorMessage) {
+		super();
+		this.successful = successful;
+		this.errorCode = errorCode;
+		this.errorMessage = errorMessage;
 	}
 
 	@Override
-	public String getId() {
-		return achievementkey;
+	public boolean isSuccessful() {
+		return successful;
+	}
+
+	public void setSuccessful(boolean successful) {
+		this.successful = successful;
 	}
 
 	@Override
-	public String getName() {
-		return achievement;
+	public int getErrorCode() {
+		return errorCode;
 	}
 
-	public String getAchievementid() {
-		return achievementid;
-	}
-
-	public PlaytomicPlayer getPlayer() {
-		return player;
+	public void setErrorCode(int errorCode) {
+		this.errorCode = errorCode;
 	}
 
 	@Override
-	public AchievementState getState() {
-		return AchievementState.Unlocked;
+	public String getErrorMessage() {
+		return errorMessage;
 	}
 
-	@Override
-	public String toString() {
-		return "PlaytomicAchievement [id=" + getId() + ", name=" + getName() + "]";
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
-
 }

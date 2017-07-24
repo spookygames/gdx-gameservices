@@ -29,4 +29,6 @@ public interface Achievement {
 
 	String getName();
 
+	AchievementState getState();
+
 }

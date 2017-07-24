@@ -81,7 +81,8 @@ public class PlaytomicServicesHandler implements ConnectionHandler, Leaderboards
 	public void setPrivateKey(String privateKey) {
 		this.network.setPrivateKey(privateKey);
 	}
-	
+
+	@Override
 	public String getPlayerName() {
 		return playerName;
 	}
@@ -90,6 +91,7 @@ public class PlaytomicServicesHandler implements ConnectionHandler, Leaderboards
 		this.playerName = playerName;
 	}
 
+	@Override
 	public String getPlayerId() {
 		return playerId;
 	}

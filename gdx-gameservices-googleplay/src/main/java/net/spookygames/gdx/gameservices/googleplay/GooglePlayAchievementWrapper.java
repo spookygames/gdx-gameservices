@@ -26,6 +26,7 @@ package net.spookygames.gdx.gameservices.googleplay;
 import android.support.annotation.NonNull;
 
 import net.spookygames.gdx.gameservices.achievement.Achievement;
+import net.spookygames.gdx.gameservices.achievement.AchievementState;
 
 public class GooglePlayAchievementWrapper implements Achievement {
 
@@ -44,5 +45,19 @@ public class GooglePlayAchievementWrapper implements Achievement {
     @Override
     public String getName() {
         return wrapped.getName();
+    }
+
+    @Override
+    public AchievementState getState() {
+        int innerState = wrapped.getState();
+        switch (innerState) {
+            case com.google.android.gms.games.achievement.Achievement.STATE_UNLOCKED:
+                return AchievementState.Unlocked;
+            case com.google.android.gms.games.achievement.Achievement.STATE_REVEALED:
+                return AchievementState.Locked;
+            case com.google.android.gms.games.achievement.Achievement.STATE_HIDDEN:
+                return AchievementState.Hidden;
+        }
+        return null;
     }
 }
