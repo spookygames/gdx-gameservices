@@ -26,6 +26,7 @@ package net.spookygames.gdx.gameservices.gamecenter;
 import org.robovm.apple.gamekit.GKAchievement;
 
 import net.spookygames.gdx.gameservices.achievement.Achievement;
+import net.spookygames.gdx.gameservices.achievement.AchievementState;
 
 public class GameCenterAchievementWrapper implements Achievement {
 
@@ -44,5 +45,10 @@ public class GameCenterAchievementWrapper implements Achievement {
 	@Override
 	public String getName() {
 		return wrapped.description();
+	}
+
+	@Override
+	public AchievementState getState() {
+		return wrapped.isCompleted() ? AchievementState.Unlocked : AchievementState.Locked;
 	}
 }

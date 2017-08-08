@@ -27,8 +27,6 @@ public interface SavedGame {
 
 	String getId();
 
-	String getName();
-
 	String getTitle();
 
 	String getDescription();

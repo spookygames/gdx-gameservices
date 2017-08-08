@@ -44,11 +44,6 @@ public class GooglePlaySnapshotWrapper implements SavedGame {
     }
 
     @Override
-    public String getName() {
-        return wrapped.getTitle();
-    }
-
-    @Override
     public String getTitle() {
         return wrapped.getTitle();
     }

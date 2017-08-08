@@ -42,8 +42,23 @@ public class GameCenterSavedGameWrapper implements SavedGame {
 	}
 
 	@Override
-	public String getName() {
+	public String getTitle() {
 		return wrapped.getName();
+	}
+
+	@Override
+	public String getDescription() {
+		return "";
+	}
+
+	@Override
+	public long getTimestamp() {
+		return wrapped.getModificationDate().toDate().getTime();
+	}
+
+	@Override
+	public long getPlayedTime() {
+		return 0;
 	}
 
 	@Override

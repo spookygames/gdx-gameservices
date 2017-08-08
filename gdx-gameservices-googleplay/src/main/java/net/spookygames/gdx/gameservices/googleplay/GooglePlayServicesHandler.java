@@ -559,7 +559,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 			public void onSuccess(final SnapshotMetadata properMetadata, ServiceResponse response) {
 				// Ok, this is coming ugly
 				// We'll first open in order to get former metadata (or create if none)
-				Games.Snapshots.open(client, save.getName(), true, resolutionPolicy)
+				Games.Snapshots.open(client, save.getTitle(), true, resolutionPolicy)
 						.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
 							@Override
 							public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
@@ -641,7 +641,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 			callback.onSuccess(((GooglePlaySnapshotWrapper) savedGame).getWrapped(), null);
 		} else {
 			// Open from API in order to get proper metadata (or create if none)
-			Games.Snapshots.open(client, savedGame.getName(), createIfNeeded, resolutionPolicy)
+			Games.Snapshots.open(client, savedGame.getTitle(), createIfNeeded, resolutionPolicy)
 					.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
 						@Override
 						public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {

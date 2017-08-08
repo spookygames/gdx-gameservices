@@ -23,8 +23,7 @@
  */
 package net.spookygames.gdx.gameservices.gamecenter;
 
-import java.nio.ByteBuffer;
-
+import org.robovm.apple.foundation.FoundationVersionNumber;
 import org.robovm.apple.foundation.NSArray;
 import org.robovm.apple.foundation.NSData;
 import org.robovm.apple.foundation.NSError;
@@ -55,8 +54,6 @@ import net.spookygames.gdx.gameservices.leaderboard.LeaderboardOptions.Collectio
 import net.spookygames.gdx.gameservices.leaderboard.LeaderboardsHandler;
 import net.spookygames.gdx.gameservices.savedgame.SavedGame;
 import net.spookygames.gdx.gameservices.savedgame.SavedGamesHandler;
-import org.robovm.apple.foundation.FoundationVersionNumber;
-
 
 @SuppressWarnings("deprecation")
 public class GameCenterServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
@@ -100,6 +97,16 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 			final GKLocalPlayer localPlayer = GKLocalPlayer.getLocalPlayer();
 			// TODO
 		}
+	}
+
+	@Override
+	public String getPlayerId() {
+		return GKLocalPlayer.getLocalPlayer().getPlayerID();
+	}
+
+	@Override
+	public String getPlayerName() {
+		return GKLocalPlayer.getLocalPlayer().getDisplayName();
 	}
 
 	@Override
@@ -242,7 +249,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public void loadSavedGameData(SavedGame metadata, final ServiceCallback<ByteBuffer> callback) {
+	public void loadSavedGameData(SavedGame metadata, final ServiceCallback<byte[]> callback) {
 		GKSavedGame game = extractMetadata(metadata);
 
 		game.loadData(new VoidBlock2<NSData, NSError>() {
@@ -253,7 +260,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
 				final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
 				if (response.isSuccessful()) {
-					callback.onSuccess(data.asByteBuffer(), response);
+					callback.onSuccess(data.getBytes(), response);
 				} else {
 					callback.onFailure(response);
 				}
@@ -262,8 +269,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public void submitSavedGame(SavedGame savedGame, ByteBuffer data, final ServiceCallback<Void> callback) {
-		
+	public void submitSavedGame(SavedGame savedGame, byte[] data, final ServiceCallback<Void> callback) {
 		NSData nsData = new NSData(data);
 		
 		String id = savedGame.getId();
