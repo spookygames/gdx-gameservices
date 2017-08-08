@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.spookygames.gdx.gameservices.googleplay;
+package net.spookygames.gdx.gameservices.gamecenter;
 
 import java.util.Date;
 

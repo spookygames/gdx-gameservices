@@ -21,33 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.spookygames.gdx.gameservices.googleplay;
+package net.spookygames.gdx.gameservices.gamecenter;
 
-import org.robovm.apple.foundation.NSError;
+import org.robovm.apple.gamekit.GKAchievement;
 
-import net.spookygames.gdx.gameservices.ServiceResponse;
+import net.spookygames.gdx.gameservices.achievement.Achievement;
 
-class GameCenterErrorWrapper implements ServiceResponse {
+public class GameCenterAchievementWrapper implements Achievement {
 
-	private final NSError error;
+	private final GKAchievement wrapped;
 
-	public GameCenterErrorWrapper(NSError error) {
+	public GameCenterAchievementWrapper(GKAchievement wrapped) {
 		super();
-		this.error = error;
+		this.wrapped = wrapped;
 	}
 
 	@Override
-	public boolean isSuccessful() {
-		return error == null;
+	public String getId() {
+		return wrapped.getIdentifier();
 	}
 
 	@Override
-	public int getErrorCode() {
-		return error == null ? 0 : (int) error.getErrorCode().value();
-	}
-
-	@Override
-	public String getErrorMessage() {
-		return error == null ? null : error.getLocalizedDescription();
+	public String getName() {
+		return wrapped.description();
 	}
 }
