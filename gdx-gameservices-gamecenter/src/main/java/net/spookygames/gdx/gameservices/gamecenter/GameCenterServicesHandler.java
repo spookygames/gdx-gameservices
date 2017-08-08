@@ -44,6 +44,7 @@ import org.robovm.objc.block.VoidBlock1;
 import org.robovm.objc.block.VoidBlock2;
 
 import net.spookygames.gdx.gameservices.ConnectionHandler;
+import net.spookygames.gdx.gameservices.PlainServiceResponse;
 import net.spookygames.gdx.gameservices.ServiceCallback;
 import net.spookygames.gdx.gameservices.TransformIterable;
 import net.spookygames.gdx.gameservices.achievement.Achievement;
@@ -157,32 +158,25 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public void getScores(String leaderboardId, LeaderboardOptions options, final ServiceCallback<Iterable<LeaderboardEntry>> callback) {
+	public void getPlayerScore(String leaderboardId, LeaderboardOptions options, final ServiceCallback<LeaderboardEntry> callback) {
+
+		GKLeaderboard leaderboard = getLeaderboard(leaderboardId, options);
 		
-		GKLeaderboard leaderboard = new GKLeaderboard();
-		leaderboard.setIdentifier(leaderboardId);
-
-		if (options != null) {
-			if (options.sort != null) {
-				error("Sorting options are not available on Game Center, will use Sort.Top");
-			}
-			Collection c = options.collection;
-			if (c != null) {
-				switch (c) {
-				case Public:
-					leaderboard.setPlayerScope(GKLeaderboardPlayerScope.Global);
-					break;
-				case Friends:
-					leaderboard.setPlayerScope(GKLeaderboardPlayerScope.FriendsOnly);
-					break;
-				}
-			}
-
-			int perPage = options.itemsPerPage;
-			if (perPage > 0) {
-				leaderboard.setRange(new NSRange(1, perPage));
+		GKScore score = leaderboard.getLocalPlayerScore();
+		
+		if (callback != null) {
+			if (score != null) {
+				callback.onSuccess(new GameCenterLeaderboardEntryWrapper(score), new PlainServiceResponse(true, 0, null));
+			} else {
+				callback.onFailure(new PlainServiceResponse(false, -1, "No local score found"));
 			}
 		}
+	}
+
+	@Override
+	public void getScores(String leaderboardId, LeaderboardOptions options, final ServiceCallback<Iterable<LeaderboardEntry>> callback) {
+
+		GKLeaderboard leaderboard = getLeaderboard(leaderboardId, options);
 		
 		leaderboard.loadScores(new VoidBlock2<NSArray<GKScore>, NSError>() {
 			@Override 
@@ -222,6 +216,36 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 	            }
 			}
 		});
+	}
+	
+	private GKLeaderboard getLeaderboard(String leaderboardId, LeaderboardOptions options) {
+
+		GKLeaderboard leaderboard = new GKLeaderboard();
+		leaderboard.setIdentifier(leaderboardId);
+
+		if (options != null) {
+			if (options.sort != null) {
+				error("Sorting options are not available on Game Center, will use Sort.Top");
+			}
+			Collection c = options.collection;
+			if (c != null) {
+				switch (c) {
+				case Public:
+					leaderboard.setPlayerScope(GKLeaderboardPlayerScope.Global);
+					break;
+				case Friends:
+					leaderboard.setPlayerScope(GKLeaderboardPlayerScope.FriendsOnly);
+					break;
+				}
+			}
+
+			int perPage = options.itemsPerPage;
+			if (perPage > 0) {
+				leaderboard.setRange(new NSRange(1, perPage));
+			}
+		}
+		
+		return leaderboard;
 	}
 
 	@Override

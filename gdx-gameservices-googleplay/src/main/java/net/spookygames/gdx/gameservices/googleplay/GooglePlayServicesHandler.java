@@ -364,7 +364,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 
 	// Leaderboards
 
-	//@Override
+	@Override
 	public void getPlayerScore(String leaderboardId, LeaderboardOptions options, final ServiceCallback<LeaderboardEntry> callback) {
 		int collection;
 		if (options != null && options.collection == Collection.Friends) {

@@ -27,6 +27,8 @@ import net.spookygames.gdx.gameservices.ServiceCallback;
 
 public interface LeaderboardsHandler {
 
+	void getPlayerScore(String leaderboardId, LeaderboardOptions options, final ServiceCallback<LeaderboardEntry> callback);
+
 	void getScores(String leaderboardId, LeaderboardOptions options, ServiceCallback<Iterable<LeaderboardEntry>> callback);
 
 	void submitScore(String leaderboardId, long score, ServiceCallback<Void> callback);

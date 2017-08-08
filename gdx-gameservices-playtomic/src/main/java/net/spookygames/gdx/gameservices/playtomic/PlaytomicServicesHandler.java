@@ -263,6 +263,43 @@ public class PlaytomicServicesHandler implements ConnectionHandler, Leaderboards
 		
 		network.send("achievements", "save", b.build(), Void.class, callback);
 	}
+
+	@Override
+	public void getPlayerScore(String leaderboardId, LeaderboardOptions options, final ServiceCallback<LeaderboardEntry> callback) {
+		// Prepare options, only one result per page
+		if (options == null)
+			options = new LeaderboardOptions();
+		options.itemsPerPage = 1;
+
+		long dummyScore = 0;
+		
+		// Send a dummy score of 0, then get resulting entry
+		// FIXME Find some way to specify the dummy score
+		saveAndList(leaderboardId, dummyScore, options, new ServiceCallback<Iterable<LeaderboardEntry>>() {
+			@Override
+			public void onSuccess(Iterable<LeaderboardEntry> result, ServiceResponse response) {
+				LeaderboardEntry playerEntry = null;
+				
+				for (LeaderboardEntry entry : result) {
+					playerEntry = entry;
+					break;	// There should only be one
+				}
+				
+				if (playerEntry == null) {
+					// No proper entry == failure
+					onFailure(response);
+				} else {
+					if (callback != null)
+						callback.onSuccess(playerEntry, response);
+				}
+			}
+			@Override
+			public void onFailure(ServiceResponse response) {
+				if (callback != null)
+					callback.onFailure(response);
+			}
+		});
+	}
 	
 	@Override
 	public void getScores(String leaderboardId, LeaderboardOptions options, final ServiceCallback<Iterable<LeaderboardEntry>> callback) {
