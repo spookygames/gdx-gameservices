@@ -45,7 +45,7 @@ public class GameCenterLeaderboardEntryWrapper implements LeaderboardEntry {
 
 	@Override
 	public String getPlayerName() {
-		return wrapped.getPlayer().getDisplayName();	// Could be wrapped.getPlayer().getAlias()
+		return wrapped.getPlayer().getAlias();
 	}
 
 	@Override

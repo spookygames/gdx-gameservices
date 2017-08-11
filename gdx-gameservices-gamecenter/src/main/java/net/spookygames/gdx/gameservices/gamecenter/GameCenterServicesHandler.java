@@ -107,7 +107,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
 	@Override
 	public String getPlayerName() {
-		return GKLocalPlayer.getLocalPlayer().getDisplayName();
+		return GKLocalPlayer.getLocalPlayer().getAlias();
 	}
 
 	@Override
