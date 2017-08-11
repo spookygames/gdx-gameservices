@@ -12,6 +12,7 @@ dependencies {
     testCompile project(path: ':gdx-gameservices', configuration: 'demo')
     testCompile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
     testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    testCompile "net.spookygames.gdx:gdx-nativefilechooser-desktop:1.0.0"
 }
 
 apply plugin: 'maven-publish'
@@ -26,7 +27,7 @@ task demo(type: Jar) {
     from {configurations.testCompile.collect {zipTree(it)}}
 
     manifest {
-        attributes 'Main-Class': "net.spookygames.gdx.gameservices.playtomic.GdxGameservicesPlaytomicDemoDesktop"
+        attributes 'Main-Class': "net.spookygames.gdx.gameservices.demo.playtomic.GdxGameservicesPlaytomicDemoDesktop"
     }
 }
 

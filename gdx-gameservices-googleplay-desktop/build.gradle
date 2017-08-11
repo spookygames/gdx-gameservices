@@ -16,9 +16,28 @@ dependencies {
     compile "com.google.apis:google-api-services-games:v1-rev239-$gapiVersion"
     compile "com.google.oauth-client:google-oauth-client-jetty:$gapiVersion"
     compile "com.google.apis:google-api-services-drive:v3-rev77-$gapiVersion"
+
+    testCompile project(path: ':gdx-gameservices', configuration: 'demo')
+    testCompile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+    testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    testCompile "net.spookygames.gdx:gdx-nativefilechooser-desktop:1.0.0"
 }
 
 apply plugin: 'maven-publish'
+
+// Demo
+task demo(type: Jar) {
+    baseName = "${project.name}-demo"
+
+    from files(sourceSets.main.output.classesDir)
+    from sourceSets.test.output
+    from {configurations.compile.collect {zipTree(it)}}
+    from {configurations.testCompile.collect {zipTree(it)}}
+
+    manifest {
+        attributes 'Main-Class': "net.spookygames.gdx.gameservices.demo.googleplay.GdxGameservicesGooglePlayDemoDesktop"
+    }
+}
 
 // Javadoc
 task javadocJar (type: Jar, dependsOn: javadoc) {
