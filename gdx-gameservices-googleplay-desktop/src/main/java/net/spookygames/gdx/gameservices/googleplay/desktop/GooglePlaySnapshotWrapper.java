@@ -21,31 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.spookygames.gdx.gameservices.googleplay;
+package net.spookygames.gdx.gameservices.googleplay.desktop;
 
-import android.support.annotation.NonNull;
-
-import com.google.android.gms.games.snapshot.SnapshotMetadata;
+import com.google.api.client.util.DateTime;
+import com.google.api.services.drive.model.File;
 
 import net.spookygames.gdx.gameservices.savedgame.SavedGame;
 
 public class GooglePlaySnapshotWrapper implements SavedGame {
 
-    private final SnapshotMetadata wrapped;
+    private final File wrapped;
 
-    public GooglePlaySnapshotWrapper(@NonNull SnapshotMetadata wrapped) {
+    public GooglePlaySnapshotWrapper(File wrapped) {
         super();
         this.wrapped = wrapped;
     }
 
     @Override
     public String getId() {
-        return wrapped.getSnapshotId();
+        return wrapped.getId();
     }
 
     @Override
     public String getTitle() {
-        return wrapped.getTitle();
+        return wrapped.getName();
     }
 
     @Override
@@ -55,24 +54,24 @@ public class GooglePlaySnapshotWrapper implements SavedGame {
 
     @Override
     public long getTimestamp() {
-        return wrapped.getLastModifiedTimestamp();
+    	DateTime time = wrapped.getModifiedTime();
+    	return time == null ? -1 : time.getValue();
     }
 
     @Override
     public long getPlayedTime() {
-        return wrapped.getPlayedTime();
+    	// Last modified time - created time
+    	// Of course this is incorrect
+    	DateTime createdTime = wrapped.getCreatedTime();
+        return getTimestamp() - (createdTime == null ? -1 : createdTime.getValue());
     }
 
     @Override
     public String getDeviceName() {
-        return wrapped.getDeviceName();
+        return "";
     }
 
-    SnapshotMetadata getWrapped() {
+    File getWrapped() {
         return wrapped;
-    }
-
-    public void merge(SavedGame other) {
-        // TODO
     }
 }

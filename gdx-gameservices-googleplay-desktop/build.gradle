@@ -1,0 +1,56 @@
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+    
+ext {
+	gapiVersion = '1.22.0'
+}
+
+dependencies {
+    compile project(':gdx-gameservices')
+        
+    compile "com.google.apis:google-api-services-games:v1-rev239-$gapiVersion"
+    compile "com.google.oauth-client:google-oauth-client-jetty:$gapiVersion"
+    compile "com.google.apis:google-api-services-drive:v3-rev77-$gapiVersion"
+}
+
+apply plugin: 'maven-publish'
+
+// Javadoc
+task javadocJar (type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+// Sources
+task sourcesJar (type : Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+}
+
+apply from: '../license.gradle'
+license.includes(["**/*.java"])
+
+apply from: '../publish.gradle'
+bintray.publications = ['maven']
+

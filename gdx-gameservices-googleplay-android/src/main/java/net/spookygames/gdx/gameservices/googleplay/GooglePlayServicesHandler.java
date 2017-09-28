@@ -557,8 +557,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		extractMetadata(save, true, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
 			@Override
 			public void onSuccess(final SnapshotMetadata properMetadata, ServiceResponse response) {
-				// Ok, this is coming ugly
-				// We'll first open in order to get former metadata (or create if none)
+				// Open metadata in order to get proper objects
 				Games.Snapshots.open(client, save.getTitle(), true, resolutionPolicy)
 						.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
 							@Override
@@ -573,6 +572,8 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 
 									SnapshotMetadataChange metadataChange = new SnapshotMetadataChange.Builder()
 											.fromMetadata(properMetadata)
+											.setPlayedTimeMillis(save.getPlayedTime())
+											.setDescription(save.getDescription())
 											.build();
 
 									PendingResult<Snapshots.CommitSnapshotResult> intent = Games.Snapshots.commitAndClose(client, snapshot, metadataChange);
@@ -651,10 +652,6 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 								// Then and only then will we be able to manipulate our dear Snapshot object
 								Snapshot snapshot = openSnapshotResult.getSnapshot();
 								SnapshotMetadata metadata = snapshot.getMetadata();
-
-								// Merge savedGame into metadata
-								GooglePlaySnapshotWrapper newOne = new GooglePlaySnapshotWrapper(metadata);
-								newOne.merge(savedGame);
 
 								callback.onSuccess(metadata, response);
 							} else {
