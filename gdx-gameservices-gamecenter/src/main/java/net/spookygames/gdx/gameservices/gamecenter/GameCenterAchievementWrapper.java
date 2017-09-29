@@ -49,6 +49,8 @@ public class GameCenterAchievementWrapper implements Achievement {
 
 	@Override
 	public AchievementState getState() {
+		// No proper state reading here, AchievementState could and should be
+		// properly retrievable from GKAchievement
 		return wrapped.isCompleted() ? AchievementState.Unlocked : AchievementState.Locked;
 	}
 }

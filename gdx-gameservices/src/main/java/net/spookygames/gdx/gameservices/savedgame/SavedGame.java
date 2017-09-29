@@ -23,18 +23,53 @@
  */
 package net.spookygames.gdx.gameservices.savedgame;
 
+/**
+ * A SavedGame contains metadata for a given saved game. Actual save content,
+ * the "raw and heavy" part, is not contained per se in this class and has to be
+ * retrieved externally.
+ */
 public interface SavedGame {
 
+	/**
+	 * Unique id of this saved game.
+	 * 
+	 * @return the id of this saved game
+	 */
 	String getId();
 
+	/**
+	 * Title, or display name, of this saved game.
+	 * 
+	 * @return the title of this saved game
+	 */
 	String getTitle();
 
+	/**
+	 * Description of this saved game.
+	 * 
+	 * @return the description of this saved game
+	 */
 	String getDescription();
 
+	/**
+	 * Timestamp, or last modification date, of this saved game.
+	 * 
+	 * @return the timestamp of this saved game
+	 */
 	long getTimestamp();
 
+	/**
+	 * Amount of time played on this saved game.
+	 * 
+	 * @return the playtime of this saved game
+	 */
 	long getPlayedTime();
 
+	/**
+	 * Device this saved game was submitted from.
+	 * 
+	 * @return the device name of this saved game
+	 */
 	String getDeviceName();
 
 }

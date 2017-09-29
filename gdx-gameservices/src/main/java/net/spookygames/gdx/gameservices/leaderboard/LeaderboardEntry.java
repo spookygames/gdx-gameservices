@@ -27,15 +27,46 @@ import java.util.Date;
 
 public interface LeaderboardEntry {
 
+	/**
+	 * Unique id of the player of this entry.
+	 * 
+	 * @return the unique id of the player
+	 */
 	String getPlayerId();
 
+	/**
+	 * Display name, or "alias", of the player of this entry.
+	 * 
+	 * @return the display name of the player
+	 */
 	String getPlayerName();
 
+	/**
+	 * Score of this entry.
+	 * 
+	 * @return the score of this entry
+	 */
 	long getScore();
 
+	/**
+	 * Rank of this entry in the leaderboard.
+	 * 
+	 * @return the rank of this entry
+	 */
 	long getRank();
 
+	/**
+	 * Source of this entry. Can be a way to distinguish between several
+	 * different platforms competing on the same leaderboard.
+	 * 
+	 * @return the source of this entry
+	 */
 	String getSource();
 
+	/**
+	 * Date this entry was submitted.
+	 * 
+	 * @return the date this entry was submitted
+	 */
 	Date getDate();
 }

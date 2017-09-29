@@ -25,8 +25,28 @@ package net.spookygames.gdx.gameservices;
 
 public interface ServiceCallback<T> {
 
+	/**
+	 * Called when service request ended up successfully. A call to method
+	 * {@link ServiceResponse#isSuccessful()} from the response should
+	 * invariably return true.
+	 * 
+	 * @param result
+	 *            the result from service call
+	 * @param response
+	 *            the response from remote service,
+	 *            {@link ServiceResponse#isSuccessful()} should return true
+	 */
 	void onSuccess(T result, ServiceResponse response);
 
+	/**
+	 * Called when service request ended on error. A call to method
+	 * {@link ServiceResponse#isSuccessful()} from the response should
+	 * invariably return false.
+	 * 
+	 * @param response
+	 *            the response from remote service,
+	 *            {@link ServiceResponse#isSuccessful()} should return false
+	 */
 	void onFailure(ServiceResponse response);
 
 }

@@ -25,10 +25,26 @@ package net.spookygames.gdx.gameservices.achievement;
 
 public interface Achievement {
 
+	/**
+	 * Unique id of this Achievement.
+	 * 
+	 * @return the id of this Achievement
+	 */
 	String getId();
 
+	/**
+	 * Display name of this Achievement.
+	 * 
+	 * @return the display name of this achievement
+	 */
 	String getName();
 
+	/**
+	 * {@link AchievementState} of this Achievement. Comes in three values:
+	 * {@code Unlocked}, {@code Locked}, {@code Hidden}.
+	 * 
+	 * @return the state of this achievement
+	 */
 	AchievementState getState();
 
 }

@@ -25,10 +25,27 @@ package net.spookygames.gdx.gameservices;
 
 public interface ServiceResponse {
 
+	/**
+	 * Success of game service request.
+	 * 
+	 * @return true if request was successful, false otherwise
+	 */
 	public boolean isSuccessful();
 
+	/**
+	 * Error code of game service request. A successful request will most likely
+	 * give an error code of 0. Any other value could then be read as an error
+	 * or abnormal state.
+	 * 
+	 * @return the error code of the game service request
+	 */
 	public int getErrorCode();
 
+	/**
+	 * Error message of game service request.
+	 * 
+	 * @return the error message from the game service request
+	 */
 	public String getErrorMessage();
 
 }

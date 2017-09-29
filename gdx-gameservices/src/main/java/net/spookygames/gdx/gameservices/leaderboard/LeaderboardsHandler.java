@@ -27,10 +27,42 @@ import net.spookygames.gdx.gameservices.ServiceCallback;
 
 public interface LeaderboardsHandler {
 
-	void getPlayerScore(String leaderboardId, LeaderboardOptions options, final ServiceCallback<LeaderboardEntry> callback);
+	/**
+	 * Get leaderboard entry for specific leaderboard and current player.
+	 * 
+	 * @param leaderboardId
+	 *            id of the leaderboard to get entry from
+	 * @param options
+	 *            leaderboard options, only the {@code collection} field is
+	 *            relevant here
+	 * @param callback
+	 *            a ServiceCallback to handle the leaderboard entry
+	 */
+	void getPlayerScore(String leaderboardId, LeaderboardOptions options, ServiceCallback<LeaderboardEntry> callback);
 
-	void getScores(String leaderboardId, LeaderboardOptions options, ServiceCallback<Iterable<LeaderboardEntry>> callback);
+	/**
+	 * Get leaderboard entries for leaderboard of given id.
+	 * 
+	 * @param leaderboardId
+	 *            id of the leaderboard to get entries from
+	 * @param options
+	 *            leaderboard options, all fields relevant
+	 * @param callback
+	 *            a ServiceCallback to handle the Iterable result
+	 */
+	void getScores(String leaderboardId, LeaderboardOptions options,
+			ServiceCallback<Iterable<LeaderboardEntry>> callback);
 
+	/**
+	 * Submit a new entry to the leaderboard of given id.
+	 * 
+	 * @param leaderboardId
+	 *            id of the leaderboard to submit an entry to
+	 * @param score
+	 *            score of the entry to submit
+	 * @param callback
+	 *            a ServiceCallback to handle success/failure
+	 */
 	void submitScore(String leaderboardId, long score, ServiceCallback<Void> callback);
 
 }

@@ -27,8 +27,26 @@ import net.spookygames.gdx.gameservices.ServiceCallback;
 
 public interface AchievementsHandler {
 
+	/**
+	 * Get achievements from game service. Be aware that some game services will
+	 * only return achievements actually unlocked by the player while some
+	 * others will return all available achievements. It is YOUR responsibility
+	 * to check achievement status and filter out if need be.
+	 * 
+	 * @param callback
+	 *            a ServiceCallback to handle the Iterable result
+	 */
 	void getAchievements(ServiceCallback<Iterable<Achievement>> callback);
 
+	/**
+	 * Unlock achievement of given id from game service. Successful unlocking is
+	 * identified by a call to method onSuccess() on given callback.
+	 * 
+	 * @param achievementId
+	 *            id of the achievement to unlock
+	 * @param callback
+	 *            an optional ServiceCallback to handle success/failure
+	 */
 	void unlockAchievement(String achievementId, ServiceCallback<Void> callback);
 
 }

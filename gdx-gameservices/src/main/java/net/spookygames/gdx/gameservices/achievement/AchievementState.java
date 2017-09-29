@@ -23,10 +23,28 @@
  */
 package net.spookygames.gdx.gameservices.achievement;
 
+/**
+ * The state of a given Achievement, coming in three possible values.
+ * <ul>
+ * <li>{@code Unlocked}: Achievement was unlocked by player.
+ * <li>{@code Locked}: Achievement is visible but was not unlocked by player.
+ * <li>{@code Hidden}: Achievement was not unlocked by player and is not
+ * visible.
+ * </ul>
+ */
 public enum AchievementState {
 
+	/**
+	 * Achievement was unlocked by player.
+	 */
 	Unlocked,
+	/**
+	 * Achievement is visible but was not unlocked by player.
+	 */
 	Locked,
+	/**
+	 * Achievement was not unlocked by player and is not visible.
+	 */
 	Hidden
 
 }

@@ -27,12 +27,52 @@ import net.spookygames.gdx.gameservices.ServiceCallback;
 
 public interface SavedGamesHandler {
 
+	/**
+	 * Get saved games from game service for current player. SavedGames contain
+	 * metadata only. In order to get save content, call
+	 * {@link #loadSavedGameData(SavedGame, ServiceCallback)}.
+	 * 
+	 * @param callback
+	 *            a ServiceCallback to handle the Iterable result
+	 */
 	void getSavedGames(ServiceCallback<Iterable<SavedGame>> callback);
 
+	/**
+	 * Get saved game data from game service for given saved game. A SavedGame
+	 * contains metadata only and calling this method is necessary to retrieve
+	 * actual game data from the service. Depending on the size of the data
+	 * stored this call may take quite some time!
+	 * 
+	 * @param metadata
+	 *            the metadata of the saved game to retrieve content from
+	 * @param callback
+	 *            a ServiceCallback to handle the byte[] result
+	 */
 	void loadSavedGameData(SavedGame metadata, ServiceCallback<byte[]> callback);
 
+	/**
+	 * Submit a game save to game service. Both metadata and raw data are sent
+	 * with this call. Any previous version will be erased or at least
+	 * unreachable from this library, depending on underlying game service.
+	 * 
+	 * @param savedGame
+	 *            the metadata of the saved game to submit
+	 * @param data
+	 *            the content of the saved game to submit
+	 * @param callback
+	 *            a ServiceCallback to handle success/failure
+	 */
 	void submitSavedGame(SavedGame savedGame, byte[] data, ServiceCallback<Void> callback);
 
+	/**
+	 * Delete a game save from game service. Only metadata needed to retrieve
+	 * the game but both metadata and raw content are to be deleted.
+	 * 
+	 * @param savedGame
+	 *            the metadata of the saved game to delete
+	 * @param callback
+	 *            a ServiceCallback to handle success/failure
+	 */
 	void deleteSavedGame(SavedGame savedGame, ServiceCallback<Void> callback);
 
 }

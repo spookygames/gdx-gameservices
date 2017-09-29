@@ -25,14 +25,38 @@ package net.spookygames.gdx.gameservices;
 
 public interface ConnectionHandler {
 
+	/**
+	 * Whether a player is currently logged in or not.
+	 * 
+	 * @return whether a player is currently logged in or not
+	 */
 	boolean isLoggedIn();
 
+	/**
+	 * Connect player to remote game service.
+	 * 
+	 * @param callback
+	 *            a ServiceCallback to handle successful/failed login
+	 */
 	void login(ServiceCallback<Void> callback);
-	
+
+	/**
+	 * Disconnect player from remote game service.
+	 */
 	void logout();
-	
+
+	/**
+	 * The unique id of currently connected player.
+	 * 
+	 * @return the unique id of current player
+	 */
 	String getPlayerId();
-	
+
+	/**
+	 * The display name, or alias, of currently connected player.
+	 * 
+	 * @return the display name of current player
+	 */
 	String getPlayerName();
 
 }

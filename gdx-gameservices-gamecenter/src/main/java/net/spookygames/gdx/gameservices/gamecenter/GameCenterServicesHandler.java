@@ -59,14 +59,6 @@ import net.spookygames.gdx.gameservices.savedgame.SavedGamesHandler;
 @SuppressWarnings("deprecation")
 public class GameCenterServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
 
-	static {
-		try {
-			Class.forName(GKScore.class.getName());
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	@Override
 	public boolean isLoggedIn() {
 		return GKLocalPlayer.getLocalPlayer().isAuthenticated();
@@ -74,28 +66,28 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
 	@Override
 	public void login(final ServiceCallback<Void> callback) {
-        if (!isLoggedIn()) {
+		if (!isLoggedIn()) {
 			final GKLocalPlayer localPlayer = GKLocalPlayer.getLocalPlayer();
 			localPlayer.setAuthenticateHandler(new VoidBlock2<UIViewController, NSError>() {
 				@Override
 				public void invoke(UIViewController viewController, NSError nsError) {
-	            	final GameCenterErrorWrapper response = new GameCenterErrorWrapper(nsError);
-		            if (localPlayer.isAuthenticated()) {
-						debug("successfully logged into gamecenter");
+					final GameCenterErrorWrapper response = new GameCenterErrorWrapper(nsError);
+					if (localPlayer.isAuthenticated()) {
+						debug("Successfully logged into GameCenter");
 						callback.onSuccess(null, response);
-		            } else { // canceled by user or GameCenter is disabled
-		                debug("Game Center account is required");
-		                callback.onFailure(response);
-		            }
+					} else {
+						// GameCenter is disabled or operation was cancelled by user
+						debug("Game Center account is required");
+						callback.onFailure(response);
+					}
 				}
 			});
-        }
+		}
 	}
 
 	@Override
 	public void logout() {
 		if (isLoggedIn()) {
-			final GKLocalPlayer localPlayer = GKLocalPlayer.getLocalPlayer();
 			// TODO
 		}
 	}
@@ -107,6 +99,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
 	@Override
 	public String getPlayerName() {
+		// getAlias() matches wanted behavior more than getDisplayName()
 		return GKLocalPlayer.getLocalPlayer().getAlias();
 	}
 
