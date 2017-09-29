@@ -23,8 +23,6 @@
  */
 package net.spookygames.gdx.gameservices.playtomic;
 
-import static net.spookygames.gdx.gameservices.playtomic.StringStuff.c;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -201,9 +199,11 @@ public class PlaytomicNet {
 	}
 
 	protected void debug(String text) {
+		// Override me
 	}
 
 	protected void error(Throwable error) {
+		// Override me
 	}
 
 	private static String md5(String value) {
@@ -225,6 +225,25 @@ public class PlaytomicNet {
 			hexString = c(hexString, Integer.toString((messageDigest[i] & 0xff) + 0x100, 16).substring(1));
 
 		return hexString;
+	}
+	
+	// String utils
+	
+	private static final StringBuilder builder = new StringBuilder();
+
+	private static String c(Object s1, Object s2) {
+		builder.setLength(0);
+		builder.append(s1);
+		builder.append(s2);
+		return builder.toString();
+	}
+
+	private static String c(Object s1, Object s2, Object s3) {
+		builder.setLength(0);
+		builder.append(s1);
+		builder.append(s2);
+		builder.append(s3);
+		return builder.toString();
 	}
 
 }
