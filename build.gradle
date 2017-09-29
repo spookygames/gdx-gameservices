@@ -7,7 +7,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.5.0'
-        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.1-SNAPSHOT'
+        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.2'
     }
 }
 
@@ -20,7 +20,7 @@ allprojects {
 
     ext {
         gdxVersion = '1.9.4'
-        roboVMVersion = '2.3.1-SNAPSHOT'
+        roboVMVersion = '2.3.2'
         libName = 'gdx-gameservices'
     }
 
