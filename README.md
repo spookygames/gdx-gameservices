@@ -278,7 +278,7 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 ## Feature support
 
 | Platform | Connection | Achievements | Leaderboard | Saved games |
-| :--- | :---: | :---: |
+| :--- | :---: | :---: | :---: | :---: |
 | Google Play Games (android) | ✓ | ✓ | ✓ | ✓ |
 | Google Play Games (desktop) | ✓ | ✓ | ✓ | ✓ |
 | Game Center (ios - roboVM)  | ✓ | ✓ | ✓ | ✓ |
