@@ -274,7 +274,19 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 * Only returns unlocked achievements
 * Sort.CenteredOnPlayer is not available for leaderboard entries
 * Does not support game saves
+* Must be setup with proper public/private keys
+```
+// Create handler
+PlaytomicServicesHandler playtomic = new PlaytomicServicesHandler();
 
+// Initialize keys
+playtomic.setServer("url_of_playtomic_server");  // "apiurl" from the docs
+playtomic.setPublicKey("public_key");  // "publicKey"
+playtomic.setPrivateKey("private_key");  // "privateKey"
+
+// Optional: set source for leaderboards
+playtomic.setPlayerSource("my_platform_source");
+```
 ## Feature support
 
 | Platform | Connection | Achievements | Leaderboard | Saved games |
