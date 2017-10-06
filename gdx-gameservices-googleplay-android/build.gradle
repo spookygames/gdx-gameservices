@@ -105,3 +105,6 @@ task createPom {
     }
 }
 build.dependsOn createPom
+
+task publishToMavenLocal (dependsOn: install) {
+}
