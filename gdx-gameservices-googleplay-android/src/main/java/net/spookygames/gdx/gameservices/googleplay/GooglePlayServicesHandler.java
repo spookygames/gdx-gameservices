@@ -518,29 +518,34 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 			@Override
 			public void onSuccess(SnapshotMetadata metadata, ServiceResponse response) {
 
-				PendingResult<Snapshots.OpenSnapshotResult> intent = Games.Snapshots.open(client, metadata, resolutionPolicy);
+				try {
+					PendingResult<Snapshots.OpenSnapshotResult> intent = Games.Snapshots.open(client, metadata, resolutionPolicy);
 
-				if (callback != null) {
-					intent.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
-						@Override
-						public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
-							Status status = openSnapshotResult.getStatus();
-							ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-							if (status.isSuccess()) {
-								Snapshot snapshot = openSnapshotResult.getSnapshot();
-								try {
-									// We stop to read all the content
-									byte[] data = snapshot.getSnapshotContents().readFully();
-									callback.onSuccess(data, response);
-								} catch (IOException e) {
-									error(e.getLocalizedMessage());
+					if (callback != null) {
+						intent.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
+							@Override
+							public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
+								Status status = openSnapshotResult.getStatus();
+								ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
+								if (status.isSuccess()) {
+									Snapshot snapshot = openSnapshotResult.getSnapshot();
+									try {
+										// We stop to read all the content
+										byte[] data = snapshot.getSnapshotContents().readFully();
+										callback.onSuccess(data, response);
+									} catch (IOException e) {
+										error(e.getLocalizedMessage());
+										callback.onFailure(response);
+									}
+								} else {
 									callback.onFailure(response);
 								}
-							} else {
-								callback.onFailure(response);
 							}
-						}
-					});
+						});
+					}
+				} catch (Throwable e) {
+					if (callback != null)
+						callback.onFailure(new GooglePlayServicesBasicResponse(false, -1, e.getLocalizedMessage()));
 				}
 			}
 
@@ -557,45 +562,55 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		extractMetadata(save, true, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
 			@Override
 			public void onSuccess(final SnapshotMetadata properMetadata, ServiceResponse response) {
-				// Open metadata in order to get proper objects
-				Games.Snapshots.open(client, save.getTitle(), true, resolutionPolicy)
-						.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
-							@Override
-							public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
-								Status status = openSnapshotResult.getStatus();
-								ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-								if (status.isSuccess()) {
-									// Then and only then will we be able to manipulate our dear Snapshot object
-									Snapshot snapshot = openSnapshotResult.getSnapshot();
+				try {
+					// Open metadata in order to get proper objects
+					Games.Snapshots.open(client, save.getTitle(), true, resolutionPolicy)
+							.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
+								@Override
+								public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
+									Status status = openSnapshotResult.getStatus();
+									ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
+									if (status.isSuccess()) {
+										// Then and only then will we be able to manipulate our dear Snapshot object
+										Snapshot snapshot = openSnapshotResult.getSnapshot();
 
-									snapshot.getSnapshotContents().writeBytes(data);
+										snapshot.getSnapshotContents().writeBytes(data);
 
-									SnapshotMetadataChange metadataChange = new SnapshotMetadataChange.Builder()
-											.fromMetadata(properMetadata)
-											.setPlayedTimeMillis(save.getPlayedTime())
-											.setDescription(save.getDescription())
-											.build();
+										SnapshotMetadataChange metadataChange = new SnapshotMetadataChange.Builder()
+												.fromMetadata(properMetadata)
+												.setPlayedTimeMillis(save.getPlayedTime())
+												.setDescription(save.getDescription())
+												.build();
 
-									PendingResult<Snapshots.CommitSnapshotResult> intent = Games.Snapshots.commitAndClose(client, snapshot, metadataChange);
-									if (callback != null) {
-										intent.setResultCallback(new ResultCallback<Snapshots.CommitSnapshotResult>() {
-											@Override
-											public void onResult(@NonNull Snapshots.CommitSnapshotResult commitSnapshotResult) {
-												Status status = commitSnapshotResult.getStatus();
-												ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-												if (status.isSuccess()) {
-													callback.onSuccess(null, response);
-												} else {
-													callback.onFailure(response);
-												}
+										try {
+											PendingResult<Snapshots.CommitSnapshotResult> intent = Games.Snapshots.commitAndClose(client, snapshot, metadataChange);
+											if (callback != null) {
+												intent.setResultCallback(new ResultCallback<Snapshots.CommitSnapshotResult>() {
+													@Override
+													public void onResult(@NonNull Snapshots.CommitSnapshotResult commitSnapshotResult) {
+														Status status = commitSnapshotResult.getStatus();
+														ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
+														if (status.isSuccess()) {
+															callback.onSuccess(null, response);
+														} else {
+															callback.onFailure(response);
+														}
+													}
+												});
 											}
-										});
+										} catch (Throwable e) {
+											if (callback != null)
+												callback.onFailure(new GooglePlayServicesBasicResponse(false, -1, e.getLocalizedMessage()));
+										}
+									} else {
+										callback.onFailure(response);
 									}
-								} else {
-									callback.onFailure(response);
 								}
-							}
 						});
+				} catch (Throwable e) {
+					if (callback != null)
+						callback.onFailure(new GooglePlayServicesBasicResponse(false, -1, e.getLocalizedMessage()));
+				}
 			}
 
 			@Override
@@ -611,21 +626,26 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		extractMetadata(save, false, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
 			@Override
 			public void onSuccess(SnapshotMetadata properMetadata, ServiceResponse response) {
-				PendingResult<Snapshots.DeleteSnapshotResult> intent = Games.Snapshots.delete(client, properMetadata);
+				try {
+					PendingResult<Snapshots.DeleteSnapshotResult> intent = Games.Snapshots.delete(client, properMetadata);
 
-				if (callback != null) {
-					intent.setResultCallback(new ResultCallback<Snapshots.DeleteSnapshotResult>() {
-						@Override
-						public void onResult(@NonNull Snapshots.DeleteSnapshotResult deleteSnapshotResult) {
-							Status status = deleteSnapshotResult.getStatus();
-							ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-							if (status.isSuccess()) {
-								callback.onSuccess(null, response);
-							} else {
-								callback.onFailure(response);
+					if (callback != null) {
+						intent.setResultCallback(new ResultCallback<Snapshots.DeleteSnapshotResult>() {
+							@Override
+							public void onResult(@NonNull Snapshots.DeleteSnapshotResult deleteSnapshotResult) {
+								Status status = deleteSnapshotResult.getStatus();
+								ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
+								if (status.isSuccess()) {
+									callback.onSuccess(null, response);
+								} else {
+									callback.onFailure(response);
+								}
 							}
-						}
-					});
+						});
+					}
+				} catch (Throwable e) {
+					if (callback != null)
+						callback.onFailure(new GooglePlayServicesBasicResponse(false, -1, e.getLocalizedMessage()));
 				}
 			}
 
