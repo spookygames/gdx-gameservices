@@ -147,7 +147,6 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 					public void onConnected(Bundle bundle) {
 						debug("Google API connected");
 
-						// Sync score
 						if (isLoggedIn()) {
 
 							if (connectionCallback != null)
@@ -182,7 +181,6 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 							}
 
 						} else {
-							// Show dialog using GoogleApiAvailability.getErrorDialog()
 							error("Login failed");
 							resolvingError = true;
 
@@ -216,8 +214,6 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 							break;
 
 						case Activity.RESULT_CANCELED:
-							// The account picker dialog closed without selecting an account.
-							// Notify users that they must pick an account to proceed.
 							error("Login cancelled");
 
 							if (connectionCallback != null)
@@ -226,8 +222,6 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 
 						case GamesActivityResultCodes.RESULT_SIGN_IN_FAILED:
 						default:
-							// The account picker dialog closed without selecting an account.
-							// Notify users that they must pick an account to proceed.
 							error("Login failed");
 
 							if (connectionCallback != null)
@@ -237,7 +231,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 				}
 
 				if (requestCode == REQUEST_LEADERBOARD && resultCode == GamesActivityResultCodes.RESULT_RECONNECT_REQUIRED) {
-					// force a disconnect to sync up state, ensuring that client reports "not connected"
+					// Force a disconnect to sync up state, ensuring that client reports "not connected"
 					logout();
 				}
 			}
