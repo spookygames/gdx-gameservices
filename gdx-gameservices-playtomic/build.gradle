@@ -18,7 +18,16 @@ dependencies {
 apply plugin: 'maven-publish'
 
 // Demo
-task demo(type: Jar) {
+ext.demoClass = "net.spookygames.gdx.gameservices.demo.playtomic.GdxGameservicesPlaytomicDemoDesktop"
+
+task demo(dependsOn: classes, type: JavaExec) {
+    main = demoClass
+    classpath = sourceSets.test.runtimeClasspath
+    standardInput = System.in
+    ignoreExitValue = true
+}
+
+task demoJar(type: Jar) {
     baseName = "${project.name}-demo"
 
     from files(sourceSets.main.output.classesDir)
@@ -27,7 +36,7 @@ task demo(type: Jar) {
     from {configurations.testCompile.collect {zipTree(it)}}
 
     manifest {
-        attributes 'Main-Class': "net.spookygames.gdx.gameservices.demo.playtomic.GdxGameservicesPlaytomicDemoDesktop"
+        attributes 'Main-Class': demoClass
     }
 }
 
