@@ -120,7 +120,8 @@ public class PlaytomicServicesHandler implements ConnectionHandler, Leaderboards
 			ServiceResponse dummyResponse = new PlaytomicResponse(false, 1);
 			callback.onFailure(dummyResponse);
 		} else {
-			// TODO Kinda ping server, is all
+			callback.onSuccess(null, new PlaytomicResponse(true, 0));
+			// TODO Kinda ping server would be good
 		}
 	}
 
