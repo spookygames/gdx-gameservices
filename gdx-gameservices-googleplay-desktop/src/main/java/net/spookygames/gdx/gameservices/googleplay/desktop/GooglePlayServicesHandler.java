@@ -23,6 +23,7 @@
  */
 package net.spookygames.gdx.gameservices.googleplay.desktop;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -111,6 +112,19 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 
     public void initialize(String applicationName, FileHandle clientSecretFile, String dataStoreDirectory) {
         initialize(applicationName, clientSecretFile.read(), dataStoreDirectory);
+    }
+
+    public void initialize(String applicationName, String clientId, String clientSecret) {
+        initialize(applicationName, clientCredentialsToStream(clientId, clientSecret));
+    }
+
+    public void initialize(String applicationName, String clientId, String clientSecret, String dataStoreDirectory) {
+        initialize(applicationName, clientCredentialsToStream(clientId, clientSecret), dataStoreDirectory);
+    }
+    
+    private static InputStream clientCredentialsToStream(String clientId, String clientSecret) {
+		String clientSecretsJson = "{ \"installed\": { \"client_id\": \"" + clientId + "\", \"client_secret\": \"" + clientSecret + "\" }	}";
+		return new ByteArrayInputStream(clientSecretsJson.getBytes());
     }
 
     public void initialize(String applicationName, InputStream clientSecret) {
