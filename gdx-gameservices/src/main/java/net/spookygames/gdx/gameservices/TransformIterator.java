@@ -43,6 +43,11 @@ public abstract class TransformIterator<TIn, TOut> implements Iterator<TOut> {
 	public TOut next() {
 		return transform(source.next());
 	}
+	
+	@Override
+	public void remove() {
+		source.remove();
+	}
 
 	protected abstract TOut transform(TIn item);
 
