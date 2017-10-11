@@ -23,7 +23,7 @@ Add following **bold** parts into your _build.gradle_ file:
 
         dependencies {
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices:0.0.1"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices:0.0.2"</b>
         }
     }
 
@@ -35,7 +35,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-desktop:0.0.1"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-desktop:0.0.2"</b>
         }
     }
 
@@ -47,7 +47,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-android:0.0.1"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-android:0.0.2"</b>
         }
     }
 
@@ -59,7 +59,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecenter:0.0.1"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecenter:0.0.2"</b>
         }
     }
 </pre>
