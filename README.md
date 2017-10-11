@@ -251,42 +251,11 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 
 ## Service-specific shenanigans
 
-#### Google Play Games (android)
+* [Google Play Games (android)](tree/master/gdx-gameservices-googleplay-android/README.md)
+* [Google Play Games (desktop)](tree/master/gdx-gameservices-googleplay-desktop/README.md)
+* [Game Center (ios - roboVM)](tree/master/gdx-gameservices-gamecenter/README.md)
+* [Playtomic](tree/master/gdx-gameservices-playtomic/README.md)
 
-* Based on Google library 10.0.1. Quite old, but keeps minimum necessary sdk version quite low. If a more recent version is needed, fork the project, bump the version to your liking and you should be good to go.
-* Sort.Bottom is not available for leaderboard entries
-
-#### Google Play Games (desktop)
-
-* Strong inspiration from MrStahlfelge's implementation, thank you!
-* Browser-based authentication
-* Sort.Bottom is not available for leaderboard entries
-* SavedGame.getDeviceName() returns an empty String
-
-#### Game Center (ios - roboVM)
-
-* Uses mobidevelop's roboVM version 2.3.2.
-* logOut() not implemented
-* Unable to use sorting on leaderboard entries
-
-#### Playtomic
-
-* Only returns unlocked achievements
-* Sort.CenteredOnPlayer is not available for leaderboard entries
-* Does not support game saves
-* Must be setup with proper public/private keys
-```
-// Create handler
-PlaytomicServicesHandler playtomic = new PlaytomicServicesHandler();
-
-// Initialize keys
-playtomic.setServer("url_of_playtomic_server");  // "apiurl" from the docs
-playtomic.setPublicKey("public_key");  // "publicKey"
-playtomic.setPrivateKey("private_key");  // "privateKey"
-
-// Optional: set source for leaderboards
-playtomic.setPlayerSource("my_platform_source");
-```
 ## Feature support
 
 | Platform | Connection | Achievements | Leaderboard | Saved games |
