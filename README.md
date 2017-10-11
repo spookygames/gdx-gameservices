@@ -52,7 +52,7 @@ Add following **bold** parts into your _build.gradle_ file:
     }
 
     // For Game Center on iOS (roboVM)
-    project(":android") {
+    project(":ios") {
 
         ...
 
@@ -251,10 +251,10 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 
 ## Service-specific shenanigans
 
-* [Google Play Games (android)](tree/master/gdx-gameservices-googleplay-android/README.md)
-* [Google Play Games (desktop)](tree/master/gdx-gameservices-googleplay-desktop/README.md)
-* [Game Center (ios - roboVM)](tree/master/gdx-gameservices-gamecenter/README.md)
-* [Playtomic](tree/master/gdx-gameservices-playtomic/README.md)
+* [Google Play Games (android)](gdx-gameservices-googleplay-android/README.md)
+* [Google Play Games (desktop)](gdx-gameservices-googleplay-desktop/README.md)
+* [Game Center (ios - roboVM)](gdx-gameservices-gamecenter/README.md)
+* [Playtomic](gdx-gameservices-playtomic/README.md)
 
 ## Feature support
 

@@ -2,20 +2,20 @@
 
 ## Setup
 
-First, add correct dependency to your gradle file as described [here](..#setup) and fill your AndroidManifest.xml file with correct information (**bold lines**):
+First, add correct dependency to your gradle file as described [here](../README.md#setup) and fill your AndroidManifest.xml file with correct information (**bold lines**):
     
     <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
         <uses-sdk
             android:minSdkVersion="9"
-            android:targetSdkVersion="24" />
+            ... />
     
-        <b><uses-permission android:name="android.permission.INTERNET" /></b>
+        <uses-permission android:name="android.permission.INTERNET" />
     
         <application>
         
-            <b><meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id" /></b>
-            <b><meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/></b>
+            <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id" />
+            <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
        
             ...
         </application>
@@ -35,7 +35,7 @@ Following such core game:
         ...
     }
 
-Android initialization code needs to use the View object. **Bold line** is important!
+Android initialization code needs to use the View object.
 
     public class MyAwesomeGameAndroid extends AndroidApplication {
         @Override
@@ -56,7 +56,7 @@ Android initialization code needs to use the View object. **Bold line** is impor
             window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             
             View view = initializeForView(game, new AndroidApplicationConfiguration());
-            <b>googlePlay.setContext(this, view, useCloudSaves);</b>
+            googlePlay.setContext(this, view, useCloudSaves);
             
             setContentView(graphics.getView(), createLayoutParams());
         }

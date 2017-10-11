@@ -4,7 +4,7 @@
 
 You first need a proper Playtomic server, of course. Look at [the official documentation](http://playtomic.org/) for Playtomic or [the github repository](https://github.com/playtomic/apiserver) for more information.
 
-Then you have to add correct dependency to your gradle file as described [here](..#setup).
+Then you have to add correct dependency to your gradle file as described [here](../README.md#setup).
 
 Playtomic handler does not depend on any platform specificity, so you may create it from your _core_ project if you wish. **You need to initialize it with proper public/private keys**.
     

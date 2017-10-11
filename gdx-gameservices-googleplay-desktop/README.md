@@ -2,7 +2,7 @@
 
 ## Setup
 
-First, add correct dependency to your gradle file as described [here](..#setup).
+First, add correct dependency to your gradle file as described [here](../README.md#setup).
 
 You also have to create a specific json file with your client id and secret:
 
@@ -27,7 +27,7 @@ Following such core game:
         ...
     }
 
-Desktop initialization code is rather straightforward, mind the **bold line** though:
+Desktop initialization code is rather straightforward, mind the call to initialize() though:
 
     public class MyAwesomeGameDesktop {
         public static void main(String[] args) {
@@ -41,7 +41,7 @@ Desktop initialization code is rather straightforward, mind the **bold line** th
             
             // Create game
             MyAwesomeGame game = new MyAwesomeGame(googlePlay);
-            <b>googlePlay.initialize(applicationName, clientSecretFile, dataStoreDirectory);</b>
+            googlePlay.initialize(applicationName, clientSecretFile, dataStoreDirectory);
             
             // Start
             new LwjglApplication(game, new LwjglApplicationConfiguration());
@@ -53,7 +53,7 @@ Instead of a credentials file, you may also directly provide client id and secre
 ## Idiosyncrasies
 
 * This library uses Google API version 1.22.0.
-* Strong inspiration from the implementation on MrStahlfelge's repo (by mgsx-dev if I'm not wrong), thank you both!
+* Strong inspiration from the implementation on MrStahlfelge's repo (by mgsx-dev), thank you both!
 * Browser-based authentication
 * Sort.Bottom is not available for leaderboard entries
 * SavedGame.getDeviceName() returns an empty String

@@ -2,7 +2,7 @@
 
 ## Setup
 
-First, add correct dependency to your gradle file as described [here](..#setup) and fill your robovm.xml file with correct information (_CloudKit_ only needed for cloud save support).
+First, add correct dependency to your gradle file as described [here](../README.md#setup) and fill your robovm.xml file with correct information (_CloudKit_ only needed for cloud save support).
 
     <config>
         ...

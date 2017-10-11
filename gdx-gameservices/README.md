@@ -2,4 +2,4 @@
 
 ## Setup and usage
 
-Refer to main readme file [here](..#setup) for library setup and [here](..#usage) for usage.
+Refer to main readme file [here](../README.md#setup) for library setup and [here](../README.md#usage) for usage.
