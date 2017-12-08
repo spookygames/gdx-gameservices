@@ -68,4 +68,20 @@ public class PlainServiceResponse implements ServiceResponse {
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
 	}
+	
+	public static ServiceResponse success() {
+		return new PlainServiceResponse(true, 0, null);
+	}
+	
+	public static ServiceResponse error(int errorCode) {
+		return error(errorCode, null);
+	}
+	
+	public static ServiceResponse error(String errorMessage) {
+		return error(-1, errorMessage);
+	}
+	
+	public static ServiceResponse error(int errorCode, String errorMessage) {
+		return new PlainServiceResponse(false, errorCode, errorMessage);
+	}
 }
