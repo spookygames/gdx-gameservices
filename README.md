@@ -14,6 +14,14 @@ Add following **bold** parts into your _build.gradle_ file:
     repositories {
         <b>maven { url "http://dl.bintray.com/spookygames/oss" }</b>
     }
+    
+    ...
+    
+    allprojects {
+        ext {
+            <b>gdxGameservicesVersion = '0.0.3'</b>
+        }
+    }
 
     ...
 
@@ -23,7 +31,7 @@ Add following **bold** parts into your _build.gradle_ file:
 
         dependencies {
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices:0.0.2"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -35,7 +43,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-desktop:0.0.2"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-desktop:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -47,7 +55,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-android:0.0.2"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-android:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -59,7 +67,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecircle:0.0.2"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecircle:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -71,7 +79,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecenter:0.0.2"</b>
+            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecenter:$gdxGameservicesVersion"</b>
         }
     }
 </pre>
