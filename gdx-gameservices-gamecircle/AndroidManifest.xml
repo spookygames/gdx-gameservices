@@ -7,7 +7,7 @@
     <uses-sdk android:minSdkVersion="10"
         android:targetSdkVersion="17"/>
 
-    <application android:label="GameCircleSDK" >
+    <application>
         <activity android:name="com.amazon.ags.html5.overlay.GameCircleUserInterface" android:theme="@style/GCOverlay" android:hardwareAccelerated="false"></activity>
         <activity android:name="com.amazon.ags.html5.overlay.GameCircleAlertUserInterface" android:theme="@style/GCAlert" android:hardwareAccelerated="false"></activity>
     </application>

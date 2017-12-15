@@ -25,15 +25,24 @@ package net.spookygames.gdx.gameservices.gamecircle;
 
 import android.app.Activity;
 
+import com.amazon.ags.api.AGResponseCallback;
 import com.amazon.ags.api.AGResponseHandle;
-import com.amazon.ags.api.achievements.AchievementsClient;
+import com.amazon.ags.api.AmazonGamesCallback;
+import com.amazon.ags.api.AmazonGamesClient;
+import com.amazon.ags.api.AmazonGamesFeature;
+import com.amazon.ags.api.AmazonGamesStatus;
 import com.amazon.ags.api.achievements.GetAchievementsResponse;
 import com.amazon.ags.api.achievements.UpdateProgressResponse;
 import com.amazon.ags.api.leaderboards.GetPlayerScoreResponse;
 import com.amazon.ags.api.leaderboards.GetScoresResponse;
 import com.amazon.ags.api.leaderboards.Score;
 import com.amazon.ags.api.leaderboards.SubmitScoreResponse;
+import com.amazon.ags.api.overlay.PopUpLocation;
 import com.amazon.ags.api.player.Player;
+import com.amazon.ags.api.player.RequestPlayerResponse;
+import com.amazon.ags.api.whispersync.GameDataMap;
+import com.amazon.ags.api.whispersync.WhispersyncClient;
+import com.amazon.ags.api.whispersync.model.SyncableString;
 import com.amazon.ags.constants.LeaderboardFilter;
 import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -52,23 +61,9 @@ import net.spookygames.gdx.gameservices.leaderboard.LeaderboardsHandler;
 import net.spookygames.gdx.gameservices.savedgame.SavedGame;
 import net.spookygames.gdx.gameservices.savedgame.SavedGamesHandler;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.Set;
-
-import com.amazon.ags.api.AGResponseCallback;
-import com.amazon.ags.api.AmazonGamesCallback;
-import com.amazon.ags.api.AmazonGamesClient;
-import com.amazon.ags.api.AmazonGamesFeature;
-import com.amazon.ags.api.AmazonGamesStatus;
-import com.amazon.ags.api.overlay.PopUpLocation;
-import com.amazon.ags.api.player.RequestPlayerResponse;
-import com.amazon.ags.api.whispersync.FailReason;
-import com.amazon.ags.api.whispersync.GameDataMap;
-import com.amazon.ags.api.whispersync.WhispersyncEventListener;
-import com.amazon.ags.api.whispersync.model.SyncableString;
-import com.badlogic.gdx.Gdx;
 
 public class GameCircleServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
 
@@ -117,8 +112,10 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 		app.addLifecycleListener(new LifecycleListener() {
 			@Override
 			public void pause() {
-				if (client != null)
+				if (client != null) {
 					AmazonGamesClient.release();
+					debug("Amazon GameCircle client released for pause");
+				}
 			}
 
 			@Override
@@ -127,6 +124,7 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 					AmazonGamesClient.initialize(context, new AmazonGamesCallback() {
 						@Override
 						public void onServiceReady(AmazonGamesClient amazonGamesClient) {
+							debug("Amazon GameCircle client successfully re-initialized");
 						}
 
 						@Override
@@ -176,6 +174,8 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 
 					connected = true;
 
+					debug("Amazon GameCircle client successfully initialized, now fetching user name...");
+
 					// Request Alias
 					client.getPlayerClient().getLocalPlayer().setCallback(
 							new AGResponseCallback<RequestPlayerResponse>() {
@@ -183,17 +183,23 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 								public void onComplete(final RequestPlayerResponse response) {
 									if (response.isError()) {
 										error("Unable to fetch local user name for Amazon GameCircle: " + response.getError());
+
+										if (callback != null)
+											callback.onFailure(new GameCircleResponseWrapper(response));
 									} else {
+
+										debug("Amazon GameCircle client successfully initialized and logged on");
+
 										Player player = response.getPlayer();
 										playerId = player.getPlayerId();
 										playerName = player.getAlias();
+
+										if (callback != null)
+											callback.onSuccess(null, PlainServiceResponse.success());
 									}
 								}
 							}
 					);
-
-					if (callback != null)
-						callback.onSuccess(null, PlainServiceResponse.success());
 
 				}
 
@@ -212,6 +218,7 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 	public void logout() {
 		if (isLoggedIn()) {
 			AmazonGamesClient.shutdown();
+			debug("Amazon GameCircle client shut down for logout");
 			client = null;
 			playerId = null;
 			playerName = null;
@@ -421,11 +428,13 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 
 	@Override
 	public void submitSavedGame(final SavedGame save, final byte[] data, final ServiceCallback<Void> callback) {
-		GameDataMap gameDataMap = AmazonGamesClient.getWhispersyncClient().getGameData();
+		WhispersyncClient whispersyncClient = AmazonGamesClient.getWhispersyncClient();
+		GameDataMap gameDataMap = whispersyncClient.getGameData();
 		try {
-	        SyncableString saved = gameDataMap.getLatestString(save.getId());
-	        String encoded = new String(Base64Coder.encode(data));
-	        saved.set(encoded);
+			SyncableString saved = gameDataMap.getLatestString(save.getId());
+			String encoded = new String(Base64Coder.encode(data));
+			saved.set(encoded);
+			whispersyncClient.flush();
 			if (callback != null)
 				callback.onSuccess(null, PlainServiceResponse.success());
 		} catch (Exception e) {
