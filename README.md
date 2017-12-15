@@ -2,7 +2,7 @@
 
 Game services wrapper for [libgdx](https://github.com/libgdx/libgdx). An alternative to the excellent [gdx-gamesvcs](https://github.com/MrStahlfelge/gdx-gamesvcs) library from MrStahlfelge, check it out!
 
-Currently supports **Google Play Games** on desktop and android, **Game Center** on iOS (using mobidevelop's roboVM fork) and **Playtomic**.
+Currently supports **Google Play Games** on desktop and android, **Amazon GameCircle** on android, **Game Center** on iOS (using mobidevelop's roboVM fork) and **Playtomic** on every platform.
 
 ## Setup
 
@@ -48,6 +48,18 @@ Add following **bold** parts into your _build.gradle_ file:
             compile project(":core")
             ...
             <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-android:0.0.2"</b>
+        }
+    }
+
+    // For Amazon GameCircle on Android
+    project(":android") {
+
+        ...
+
+        dependencies {
+            compile project(":core")
+            ...
+            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecircle:0.0.2"</b>
         }
     }
 
@@ -253,6 +265,7 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 
 * [Google Play Games (android)](gdx-gameservices-googleplay-android/README.md)
 * [Google Play Games (desktop)](gdx-gameservices-googleplay-desktop/README.md)
+* [Amazon GameCircle (android)](gdx-gameservices-gamecircle/README.md)
 * [Game Center (ios - roboVM)](gdx-gameservices-gamecenter/README.md)
 * [Playtomic](gdx-gameservices-playtomic/README.md)
 
@@ -262,6 +275,7 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 | :--- | :---: | :---: | :---: | :---: |
 | Google Play Games (android) | ✓ | ✓ | ✓ | ✓ |
 | Google Play Games (desktop) | ✓ | ✓ | ✓ | ✓ |
+| Amazon GameCircle (android) | ✓ | ✓ | ✓ | ✓ |
 | Game Center (ios - roboVM)  | ✓ | ✓ | ✓ | ✓ |
 | Playtomic                   | ✓ | ✓ | ✓ | ✕ |
 
@@ -269,4 +283,4 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 
 * Refine API
 * A functional cross-platform cross-service demo
-* Supports m0ar platforms and services!
+* Support m0ar platforms and services!
