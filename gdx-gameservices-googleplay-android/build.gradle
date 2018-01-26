@@ -11,7 +11,7 @@ android {
     buildToolsVersion '25'
 
     defaultConfig {
-        minSdkVersion 9
+        minSdkVersion 14
         targetSdkVersion 23
     }
     
@@ -33,7 +33,7 @@ targetCompatibility = 1.6
 dependencies {
     compile project(':gdx-gameservices')
     compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
-    compile 'com.google.android.gms:play-services-games:10.0.1'
+    compile 'com.google.android.gms:play-services-games:11.0.4'
 }
 
 task javadoc(type: Javadoc) {

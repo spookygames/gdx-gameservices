@@ -64,5 +64,5 @@ Android initialization code needs to use the View object.
 
 ## Idiosyncrasies
 
-* This library uses Google's _play-services-games_ version 10.0.1. Quite old, but it keeps minimum necessary sdk version pretty low and did not seem to cause a lot of issues _so far_. If a more recent version is needed, fork the project, bump the version to your liking and you should be good to go.
+* This library uses Google's _play-services-games_ version 11.0.4. If a different version is needed, fork the project, bump the version to your liking and you should be good to go.
 * Sort.Bottom is not available for leaderboard entries.
