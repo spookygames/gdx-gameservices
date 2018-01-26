@@ -19,7 +19,7 @@ Add following **bold** parts into your _build.gradle_ file:
     
     allprojects {
         ext {
-            <b>gdxGameservicesVersion = '0.0.3'</b>
+            <b>gdxGameservicesVersion = '0.0.4'</b>
         }
     }
 
