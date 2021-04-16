@@ -30,7 +30,7 @@ task demo(dependsOn: classes, type: JavaExec) {
 task demoJar(type: Jar) {
     baseName = "${project.name}-demo"
 
-    from files(sourceSets.main.output.classesDir)
+    from files(sourceSets.main.output.classesDirs)
     from sourceSets.test.output
     from {configurations.compile.collect {zipTree(it)}}
     from {configurations.testCompile.collect {zipTree(it)}}

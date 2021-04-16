@@ -1,18 +1,16 @@
 
 plugins {
-  id "com.github.dcendents.android-maven" version "1.5"
+    id 'maven-publish'
 }
 
-apply plugin: 'android-library'
-apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '25'
+    compileSdkVersion 26
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion 26
     }
     
     compileOptions {
@@ -31,9 +29,9 @@ sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 dependencies {
-    compile project(':gdx-gameservices')
-    compile "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
-    compile 'com.google.android.gms:play-services-games:11.0.4'
+    api project(':gdx-gameservices')
+    api "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
+    api 'com.google.android.gms:play-services-games:11.0.4'
 }
 
 task javadoc(type: Javadoc) {
@@ -60,32 +58,6 @@ artifacts {
     archives javadocJar
 }
 
-eclipse {
-    sourceSets {
-        main {
-            java.srcDirs 'src/main/java', 'gen'
-        }
-    }
-
-    jdt {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
-    }
-
-    classpath {
-        plusConfigurations += [ project.configurations.compile ]        
-        containers 'org.eclipse.andmore.ANDROID_FRAMEWORK', 'org.eclipse.andmore.LIBRARIES'       
-    }
-
-    project {
-        natures 'org.eclipse.andmore.AndroidNature'
-        buildCommands.clear();
-        buildCommand "org.eclipse.andmore.PreCompilerBuilder"
-        buildCommand "org.eclipse.jdt.core.javabuilder"
-        buildCommand "org.eclipse.andmore.ApkBuilder"
-    }
-}
-
 apply from: '../license.gradle'
 license.excludes(["**/*.xml", "**/BuildConfig.java", "**/R.java"])
 
@@ -93,18 +65,18 @@ apply from: '../publish.gradle'
 bintray.configurations = ['archives']
 bintrayUpload.dependsOn build
 
-task createPom {
-    doLast {
-    pom {
-        project {
-            packaging 'aar'
-            artifactId project.archivesBaseName
+// Because the components are created only during the afterEvaluate phase, you must
+// configure your publications using the afterEvaluate() lifecycle method.
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.release
+                artifact javadocJar
+                artifact sourcesJar
+            }
         }
     }
-    .writeTo("$buildDir/poms/pom-default.xml")
-    }
-}
-build.dependsOn createPom
-
-task publishToMavenLocal (dependsOn: install) {
 }
