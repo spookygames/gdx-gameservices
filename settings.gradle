@@ -1,3 +1,2 @@
-include 'gdx-gameservices', 'gdx-gameservices-googleplay-android', 'gdx-gameservices-googleplay-desktop', 'gdx-gameservices-playtomic', 'gdx-gameservices-gamecenter', 'gdx-gameservices-gamecircle'
+include 'core', 'googleplay-android', 'googleplay-desktop', 'playtomic', 'gamecenter', 'gamecircle'
 
-rootProject.name = "gdx-gameservices-root"

@@ -1,10 +1,8 @@
-
 buildscript {
     repositories {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         google()
-        jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.4'
@@ -12,14 +10,19 @@ buildscript {
     }
 }
 
+plugins {
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+}
+
 allprojects {
 
-    group = 'net.spookygames.gdx'
+    group = 'games.spooky.gdx'
     version = '0.0.4'
 
     ext {
         gdxVersion = '1.9.4'
         roboVMVersion = '2.3.2'
+        nativefilechooserVersion = '1.0.0'
         libName = 'gdx-gameservices'
     }
 
@@ -27,6 +30,11 @@ allprojects {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
         google()
-        maven { url "http://dl.bintray.com/spookygames/oss" }
     }
 }
+
+subprojects {
+    apply from: "$rootDir/gradle/license.gradle"
+}
+
+apply from: "${rootDir}/gradle/publish-root.gradle"

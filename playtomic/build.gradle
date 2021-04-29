@@ -7,15 +7,19 @@ targetCompatibility = 1.6
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 dependencies {
-    compile project(':gdx-gameservices')
+    compile project(':core')
 
-    testCompile project(path: ':gdx-gameservices', configuration: 'demo')
+    testCompile project(path: ':core', configuration: 'demo')
     testCompile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
     testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-    testCompile "net.spookygames.gdx:gdx-nativefilechooser-desktop:1.0.0"
+    testCompile "games.spooky.gdx:gdx-nativefilechooser-desktop:$nativefilechooserVersion"
 }
 
-apply plugin: 'maven-publish'
+archivesBaseName = "$libName-${project.name}"
+
+license.includes(["**/*.java"])
+
+apply from: "${rootProject.projectDir}/gradle/publish-module.gradle"
 
 // Demo
 ext.demoClass = "net.spookygames.gdx.gameservices.demo.playtomic.GdxGameservicesPlaytomicDemoDesktop"
@@ -28,7 +32,7 @@ task demo(dependsOn: classes, type: JavaExec) {
 }
 
 task demoJar(type: Jar) {
-    baseName = "${project.name}-demo"
+    classifier 'demo'
 
     from files(sourceSets.main.output.classesDirs)
     from sourceSets.test.output
@@ -39,37 +43,3 @@ task demoJar(type: Jar) {
         attributes 'Main-Class': demoClass
     }
 }
-
-// Javadoc
-task javadocJar (type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-// Sources
-task sourcesJar (type : Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-
-            artifact sourcesJar
-            artifact javadocJar
-        }
-    }
-}
-
-apply from: '../license.gradle'
-license.includes(["**/*.java"])
-
-apply from: '../publish.gradle'
-bintray.publications = ['maven']

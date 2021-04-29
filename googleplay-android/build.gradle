@@ -1,0 +1,44 @@
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 26
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 26
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_6
+        targetCompatibility JavaVersion.VERSION_1_6
+    }
+    
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+        }
+    }
+}
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+project.archivesBaseName = "$libName-${project.name}"
+
+dependencies {
+    api project(':core')
+    api "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
+    api 'com.google.android.gms:play-services-games:11.0.4'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    destinationDir = file("../javadoc/")
+    failOnError false
+}
+
+license.excludes(["**/*.xml", "**/BuildConfig.java", "**/R.java"])
+
+apply from: "${rootProject.projectDir}/gradle/publish-module.gradle"

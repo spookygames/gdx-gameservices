@@ -11,12 +11,6 @@ Your project needs libgdx >= 1.9.4.
 Add following **bold** parts into your _build.gradle_ file:
 
 <pre>
-    repositories {
-        <b>maven { url "http://dl.bintray.com/spookygames/oss" }</b>
-    }
-    
-    ...
-    
     allprojects {
         ext {
             <b>gdxGameservicesVersion = '0.0.4'</b>
@@ -31,7 +25,7 @@ Add following **bold** parts into your _build.gradle_ file:
 
         dependencies {
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices:$gdxGameservicesVersion"</b>
+            <b>compile "games.spooky.gdx:gdx-gameservices:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -43,7 +37,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-desktop:$gdxGameservicesVersion"</b>
+            <b>compile "games.spooky.gdx:gdx-gameservices-googleplay-desktop:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -55,7 +49,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-googleplay-android:$gdxGameservicesVersion"</b>
+            <b>compile "games.spooky.gdx:gdx-gameservices-googleplay-android:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -67,7 +61,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecircle:$gdxGameservicesVersion"</b>
+            <b>compile "games.spooky.gdx:gdx-gameservices-gamecircle:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -79,7 +73,7 @@ Add following **bold** parts into your _build.gradle_ file:
         dependencies {
             compile project(":core")
             ...
-            <b>compile "net.spookygames.gdx:gdx-gameservices-gamecenter:$gdxGameservicesVersion"</b>
+            <b>compile "games.spooky.gdx:gdx-gameservices-gamecenter:$gdxGameservicesVersion"</b>
         }
     }
 </pre>
