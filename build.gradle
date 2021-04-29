@@ -22,7 +22,7 @@ allprojects {
     ext {
         gdxVersion = '1.9.4'
         roboVMVersion = '2.3.2'
-        nativefilechooserVersion = '1.0.0'
+        nativefilechooserVersion = '2.0.0'
         libName = 'gdx-gameservices'
     }
 

@@ -22,7 +22,7 @@ license.includes(["**/*.java"])
 apply from: "${rootProject.projectDir}/gradle/publish-module.gradle"
 
 // Demo
-ext.demoClass = "net.spookygames.gdx.gameservices.demo.playtomic.GdxGameservicesPlaytomicDemoDesktop"
+ext.demoClass = "games.spooky.gdx.gameservices.demo.playtomic.GdxGameservicesPlaytomicDemoDesktop"
 
 task demo(dependsOn: classes, type: JavaExec) {
     main = demoClass
