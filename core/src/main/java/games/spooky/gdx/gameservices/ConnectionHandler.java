@@ -59,4 +59,11 @@ public interface ConnectionHandler {
 	 */
 	String getPlayerName();
 
+	/**
+	 * The URL leading to the avatar of currently connected player (optional).
+	 *
+	 * @return the avatar of current player, or null
+	 */
+	String getPlayerAvatarUrl();
+
 }

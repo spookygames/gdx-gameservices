@@ -100,6 +100,11 @@ public class PlaytomicServicesHandler implements ConnectionHandler, Leaderboards
 		this.playerId = playerId;
 	}
 
+	@Override
+	public String getPlayerAvatarUrl() {
+		return null;
+	}
+
 	public String getPlayerSource() {
 		return playerSource;
 	}

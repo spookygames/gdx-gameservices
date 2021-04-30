@@ -56,5 +56,6 @@ iOS initialization code is quite straightforward:
 
 * Uses mobidevelop's roboVM version 2.3.2.
 * logOut() not implemented
+* getPlayerAvatarUrl() returns `null`
 * Unable to use sorting on leaderboard entries
 

@@ -74,6 +74,7 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 	private boolean connected;
 	private String playerId = null;
 	private String playerName = null;
+	private String playerAvatarUrl = null;
 
 	private PopUpLocation popUpLocation = null;
 
@@ -193,6 +194,7 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 										Player player = response.getPlayer();
 										playerId = player.getPlayerId();
 										playerName = player.getAlias();
+										playerAvatarUrl = player.getAvatarUrl();
 
 										if (callback != null)
 											callback.onSuccess(null, PlainServiceResponse.success());
@@ -222,6 +224,7 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 			client = null;
 			playerId = null;
 			playerName = null;
+			playerAvatarUrl = null;
 		}
 	}
 
@@ -233,6 +236,11 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 	@Override
 	public String getPlayerName() {
 		return playerName;
+	}
+
+	@Override
+	public String getPlayerAvatarUrl() {
+		return playerAvatarUrl;
 	}
 
 	// Achievements

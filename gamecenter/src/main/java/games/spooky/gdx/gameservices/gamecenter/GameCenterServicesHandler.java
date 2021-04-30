@@ -104,6 +104,11 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
+	public String getPlayerAvatarUrl() {
+		return null;
+	}
+
+	@Override
 	public void getAchievements(final ServiceCallback<Iterable<Achievement>> callback) {
 		
 		GKAchievement.loadAchievements(new VoidBlock2<NSArray<GKAchievement>, NSError>() {

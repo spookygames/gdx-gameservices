@@ -100,6 +100,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 
     private String playerId;
     private String playerName;
+    private String playerAvatarUrl;
 
     private boolean connected;
     private boolean connecting;
@@ -159,6 +160,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 			// Make sure we do not try twice concurrently
             connecting = true;
             playerName = null;
+            playerAvatarUrl = null;
 
             // Initiate connection on a separate thread
             new Thread() {
@@ -208,6 +210,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
                             Player player = games.players().get(LOCAL_PLAYER).execute();
                             playerId = player.getPlayerId();
                             playerName = player.getDisplayName();
+                            playerAvatarUrl = player.getAvatarImageUrl();
 
                             // Eventually, success callback
                             if (callback != null)
@@ -231,6 +234,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		if (isLoggedIn()) {
 	        connected = false;
 	        playerName = null;
+	        playerAvatarUrl = null;
 	        games = null;
 	        drive = null;
 		}
@@ -245,7 +249,12 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 	public String getPlayerName() {
         return playerName;
 	}
-	
+
+	@Override
+	public String getPlayerAvatarUrl() {
+		return playerAvatarUrl;
+	}
+
 	/**
 	 * Hostname used by the authentication mechanism. Defaults to localhost, override at will.
 	 * @return the hostname used by the authentication mechanism

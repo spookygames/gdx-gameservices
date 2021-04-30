@@ -309,6 +309,11 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		return Games.Players.getCurrentPlayer(client).getDisplayName();
 	}
 
+	@Override
+	public String getPlayerAvatarUrl() {
+		return Games.Players.getCurrentPlayer(client).getIconImageUri().toString();
+	}
+
 	// Achievements
 
 	@Override

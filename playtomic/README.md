@@ -27,6 +27,7 @@ Playtomic handler does not depend on any platform specificity, so you may create
 
 ## Idiosyncrasies
 
+* getPlayerAvatarUrl() returns `null`
 * Only returns unlocked achievements
 * Sort.CenteredOnPlayer is not available for leaderboard entries
 * Does not support game saves
