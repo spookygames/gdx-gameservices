@@ -23,26 +23,6 @@
  */
 package games.spooky.gdx.gameservices.gamecenter;
 
-import org.robovm.apple.foundation.FoundationVersionNumber;
-import org.robovm.apple.foundation.NSArray;
-import org.robovm.apple.foundation.NSData;
-import org.robovm.apple.foundation.NSError;
-import org.robovm.apple.foundation.NSRange;
-import org.robovm.apple.gamekit.GKAchievement;
-import org.robovm.apple.gamekit.GKLeaderboard;
-import org.robovm.apple.gamekit.GKLeaderboardPlayerScope;
-import org.robovm.apple.gamekit.GKLocalPlayer;
-import org.robovm.apple.gamekit.GKSavedGame;
-import org.robovm.apple.gamekit.GKScore;
-import org.robovm.apple.uikit.UIAlertAction;
-import org.robovm.apple.uikit.UIAlertActionStyle;
-import org.robovm.apple.uikit.UIAlertController;
-import org.robovm.apple.uikit.UIAlertControllerStyle;
-import org.robovm.apple.uikit.UIAlertView;
-import org.robovm.apple.uikit.UIViewController;
-import org.robovm.objc.block.VoidBlock1;
-import org.robovm.objc.block.VoidBlock2;
-
 import games.spooky.gdx.gameservices.ConnectionHandler;
 import games.spooky.gdx.gameservices.PlainServiceResponse;
 import games.spooky.gdx.gameservices.ServiceCallback;
@@ -55,6 +35,11 @@ import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions.Collection;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardsHandler;
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
 import games.spooky.gdx.gameservices.savedgame.SavedGamesHandler;
+import org.robovm.apple.foundation.*;
+import org.robovm.apple.gamekit.*;
+import org.robovm.apple.uikit.*;
+import org.robovm.objc.block.VoidBlock1;
+import org.robovm.objc.block.VoidBlock2;
 
 @SuppressWarnings("deprecation")
 public class GameCenterServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
@@ -104,8 +89,26 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public String getPlayerAvatarUrl() {
-		return null;
+	public void getPlayerAvatar(final ServiceCallback<byte[]> callback) {
+		GKLocalPlayer.getLocalPlayer().loadPhoto(GKPhotoSize.Normal, new VoidBlock2<UIImage, NSError>() {
+			@Override
+			public void invoke(UIImage image, NSError error) {
+				if (callback == null)
+					return;
+
+				final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
+				if (response.isSuccessful()) {
+					try {
+						byte[] bytes = image == null ? null : image.toPNGData().getBytes();
+						callback.onSuccess(bytes, response);
+					} catch (UnsatisfiedLinkError e) {
+						callback.onFailure(PlainServiceResponse.error(e.getMessage()));
+					}
+				} else {
+					callback.onFailure(response);
+				}
+			}
+		});
 	}
 
 	@Override

@@ -60,10 +60,12 @@ public interface ConnectionHandler {
 	String getPlayerName();
 
 	/**
-	 * The URL leading to the avatar of currently connected player (optional).
+	 * Download bytes of the avatar of currently connected player (optional).
+	 * PNG if possible. Using Pixmap is a nice way to integrate these bytes into your game.
 	 *
-	 * @return the avatar of current player, or null
+	 * @param callback
+	 *            a ServiceCallback to handle bytes of player avatar
 	 */
-	String getPlayerAvatarUrl();
+	void getPlayerAvatar(final ServiceCallback<byte[]> callback);
 
 }

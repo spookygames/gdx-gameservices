@@ -27,15 +27,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.view.View;
-import android.widget.Toast;
-
 import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.backends.android.AndroidApplication;
-import com.badlogic.gdx.backends.android.AndroidApplicationBase;
 import com.badlogic.gdx.backends.android.AndroidEventListener;
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
 import com.google.android.gms.common.ConnectionResult;
@@ -43,6 +47,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.images.ImageManager;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesActivityResultCodes;
@@ -54,11 +59,7 @@ import com.google.android.gms.games.snapshot.Snapshot;
 import com.google.android.gms.games.snapshot.SnapshotMetadata;
 import com.google.android.gms.games.snapshot.SnapshotMetadataChange;
 import com.google.android.gms.games.snapshot.Snapshots;
-
-import games.spooky.gdx.gameservices.ConnectionHandler;
-import games.spooky.gdx.gameservices.ServiceCallback;
-import games.spooky.gdx.gameservices.ServiceResponse;
-import games.spooky.gdx.gameservices.TransformIterable;
+import games.spooky.gdx.gameservices.*;
 import games.spooky.gdx.gameservices.achievement.Achievement;
 import games.spooky.gdx.gameservices.achievement.AchievementsHandler;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
@@ -69,6 +70,7 @@ import games.spooky.gdx.gameservices.leaderboard.LeaderboardsHandler;
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
 import games.spooky.gdx.gameservices.savedgame.SavedGamesHandler;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 
@@ -78,6 +80,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 	public static final int REQUEST_LEADERBOARD = 1002;
 
 	private GoogleApiClient client = null;
+	private ImageManager imageManager = null;
 
 	private boolean resolvingError = false;
 
@@ -91,7 +94,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 
 	/**
 	 * Get the current resolution policy that should handle {@link Snapshot} conflicts.
-	 * @return
+	 * @return the resolution policy
 	 */
 	public int getResolutionPolicy() {
 		return resolutionPolicy;
@@ -109,38 +112,38 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 	// Lifecycle
 
 	public void setContext(final AndroidApplication app, View view) {
-		addAndroidEventListener(app, initializeContext(app, app.getContext(), view, false));
+		addAndroidEventListener(app, initializeContext(app.getContext(), view, false));
 	}
 
 	public void setContext(final AndroidFragmentApplication app, View view) {
-		addAndroidEventListener(app, initializeContext(app, app.getContext(), view, false));
+		addAndroidEventListener(app, initializeContext(app.getContext(), view, false));
 	}
 
 	public void setContext(final AndroidApplication app, Context context, View view) {
-		addAndroidEventListener(app, initializeContext(app, context, view, false));
+		addAndroidEventListener(app, initializeContext(context, view, false));
 	}
 
 	public void setContext(final AndroidFragmentApplication app, Context context, View view) {
-		addAndroidEventListener(app, initializeContext(app, context, view, false));
+		addAndroidEventListener(app, initializeContext(context, view, false));
 	}
 
 	public void setContext(final AndroidApplication app, View view, boolean handleSaves) {
-		addAndroidEventListener(app, initializeContext(app, app.getContext(), view, handleSaves));
+		addAndroidEventListener(app, initializeContext(app.getContext(), view, handleSaves));
 	}
 
 	public void setContext(final AndroidFragmentApplication app, View view, boolean handleSaves) {
-		addAndroidEventListener(app, initializeContext(app, app.getContext(), view, handleSaves));
+		addAndroidEventListener(app, initializeContext(app.getContext(), view, handleSaves));
 	}
 
 	public void setContext(final AndroidApplication app, Context context, View view, boolean handleSaves) {
-		addAndroidEventListener(app, initializeContext(app, context, view, handleSaves));
+		addAndroidEventListener(app, initializeContext(context, view, handleSaves));
 	}
 
 	public void setContext(final AndroidFragmentApplication app, Context context, View view, boolean handleSaves) {
-		addAndroidEventListener(app, initializeContext(app, context, view, handleSaves));
+		addAndroidEventListener(app, initializeContext(context, view, handleSaves));
 	}
 
-	private AndroidEventListener initializeContext(final AndroidApplicationBase app, final Context context, View view, boolean handleSaves) {
+	private AndroidEventListener initializeContext(final Context context, View view, boolean handleSaves) {
 		GoogleApiClient.Builder builder = new GoogleApiClient.Builder(context)
 				.addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
 					@Override
@@ -164,14 +167,16 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 				})
 				.addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
 					@Override
-					public void onConnectionFailed(ConnectionResult connectionResult) {
+					public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 						int errorCode = connectionResult.getErrorCode();
 						error("Google API connection failed " + connectionResult.getErrorMessage() + " (" + errorCode + ")");
 
 						if (resolvingError) {
 							// Already attempting to resolve an error.
 							return;
-						} else if (connectionResult.hasResolution()) {
+						}
+
+						if (connectionResult.hasResolution()) {
 							try {
 								resolvingError = true;
 								connectionResult.startResolutionForResult((Activity) context, REQUEST_RESOLVE_ERROR);
@@ -198,6 +203,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		}
 
 		client = builder.build();
+		imageManager = ImageManager.create(context);
 
 		return new AndroidEventListener() {
 			@Override
@@ -310,8 +316,33 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public String getPlayerAvatarUrl() {
-		return Games.Players.getCurrentPlayer(client).getIconImageUri().toString();
+	public void getPlayerAvatar(final ServiceCallback<byte[]> callback) {
+		final Uri avatarUri = Games.Players.getCurrentPlayer(client).getIconImageUri();
+		if (avatarUri == null) {
+			if (callback != null)
+				callback.onSuccess(null, PlainServiceResponse.success());
+		} else {
+			new Handler(Looper.getMainLooper()).post(new Runnable() {
+				@Override
+				public void run() {
+					ImageManager.OnImageLoadedListener listener = new ImageManager.OnImageLoadedListener() {
+						@Override
+						public void onImageLoaded(Uri uri, Drawable drawable, boolean isRequestedDrawable) {
+							if (drawable == null) {
+								if (callback != null)
+									callback.onSuccess(null, PlainServiceResponse.success());
+								return;
+							}
+
+							byte[] bytes = drawableToBytes(drawable);
+							if (callback != null)
+								callback.onSuccess(bytes, PlainServiceResponse.success());
+						}
+					};
+					imageManager.loadImage(listener, avatarUri);
+				}
+			});
+		}
 	}
 
 	// Achievements
@@ -322,7 +353,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		if (callback != null) {
 			intent.setResultCallback(new ResultCallback<Achievements.LoadAchievementsResult>() {
 				@Override
-				public void onResult(Achievements.LoadAchievementsResult loadAchievementsResult) {
+				public void onResult(@NonNull Achievements.LoadAchievementsResult loadAchievementsResult) {
 					Status status = loadAchievementsResult.getStatus();
 					ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
 					if (status.isSuccess()) {
@@ -492,7 +523,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		if (callback != null) {
 			intent.setResultCallback(new ResultCallback<Snapshots.LoadSnapshotsResult>() {
 				@Override
-				public void onResult(Snapshots.LoadSnapshotsResult loadSnapshotsResult) {
+				public void onResult(@NonNull Snapshots.LoadSnapshotsResult loadSnapshotsResult) {
 					Status status = loadSnapshotsResult.getStatus();
 					ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
 					if (status.isSuccess()) {
@@ -691,27 +722,32 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 
 	}
 
-	public static void toast(final Context context, final int resource) {
-		new Thread() {
-			@Override
-			public void run() {
-				Looper.prepare();
-				Toast.makeText(context, resource, Toast.LENGTH_LONG).show();
-				Looper.loop();
-			}
+	private static Bitmap drawableToBitmap(Drawable drawable) {
+		if (drawable instanceof BitmapDrawable)
+			return ((BitmapDrawable)drawable).getBitmap();
 
-		}.start();
+		// We ask for the bounds if they have been set as they would be most
+		// correct, then we check we are  > 0
+		Rect bounds = drawable.getBounds();
+		final int width = bounds.isEmpty() ? drawable.getIntrinsicWidth() : bounds.width();
+		final int height = bounds.isEmpty() ? drawable.getIntrinsicHeight() : bounds.height();
+
+		// Now we check we are > 0
+		final Bitmap bitmap = Bitmap.createBitmap(width <= 0 ? 1 : width, height <= 0 ? 1 : height,
+				Bitmap.Config.ARGB_8888);
+
+		Canvas canvas = new Canvas(bitmap);
+		drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+		drawable.draw(canvas);
+
+		return bitmap;
 	}
 
-	public static void toast(final Context context, final String text) {
-		new Thread() {
-			@Override
-			public void run() {
-				Looper.prepare();
-				Toast.makeText(context, text, Toast.LENGTH_LONG).show();
-				Looper.loop();
-			}
-
-		}.start();
+	private static byte[] drawableToBytes(Drawable drawable) {
+		Bitmap bitmap = drawableToBitmap(drawable);
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+		return stream.toByteArray();
 	}
+
 }

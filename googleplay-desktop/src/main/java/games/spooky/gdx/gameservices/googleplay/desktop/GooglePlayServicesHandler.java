@@ -23,19 +23,12 @@
  */
 package games.spooky.gdx.gameservices.googleplay.desktop;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Net;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.net.HttpStatus;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.StreamUtils;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.Credential;
@@ -58,19 +51,8 @@ import com.google.api.services.drive.model.FileList;
 import com.google.api.services.games.Games;
 import com.google.api.services.games.GamesRequest;
 import com.google.api.services.games.GamesScopes;
-import com.google.api.services.games.model.AchievementUnlockResponse;
-import com.google.api.services.games.model.LeaderboardScores;
-import com.google.api.services.games.model.Player;
-import com.google.api.services.games.model.PlayerAchievement;
-import com.google.api.services.games.model.PlayerAchievementListResponse;
-import com.google.api.services.games.model.PlayerLeaderboardScore;
-import com.google.api.services.games.model.PlayerLeaderboardScoreListResponse;
-import com.google.api.services.games.model.PlayerScoreResponse;
-
-import games.spooky.gdx.gameservices.ConnectionHandler;
-import games.spooky.gdx.gameservices.ServiceCallback;
-import games.spooky.gdx.gameservices.ServiceResponse;
-import games.spooky.gdx.gameservices.TransformIterable;
+import com.google.api.services.games.model.*;
+import games.spooky.gdx.gameservices.*;
 import games.spooky.gdx.gameservices.achievement.Achievement;
 import games.spooky.gdx.gameservices.achievement.AchievementsHandler;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
@@ -78,6 +60,16 @@ import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardsHandler;
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
 import games.spooky.gdx.gameservices.savedgame.SavedGamesHandler;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 public class GooglePlayServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
 
@@ -189,7 +181,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
                             // Start authorization
                             AuthorizationCodeInstalledApp authorizer = new AuthorizationCodeInstalledApp(flow, receiver) {
                                 // Override open browser not working well on Linux and maybe other OSes.
-                                protected void onAuthorization(AuthorizationCodeRequestUrl authorizationUrl) throws java.io.IOException {
+                                protected void onAuthorization(AuthorizationCodeRequestUrl authorizationUrl) {
                                     Gdx.net.openURI(authorizationUrl.build());
                                 }
                             };
@@ -251,8 +243,38 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public String getPlayerAvatarUrl() {
-		return playerAvatarUrl;
+	public void getPlayerAvatar(final ServiceCallback<byte[]> callback) {
+
+		Net.HttpRequest httpRequest = Pools.obtain(Net.HttpRequest.class);
+		httpRequest.setMethod(Net.HttpMethods.GET);
+		httpRequest.setUrl(playerAvatarUrl);
+
+		Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
+			@Override
+			public void handleHttpResponse(Net.HttpResponse httpResponse) {
+				final int statusCode = httpResponse.getStatus().getStatusCode();
+				debug("Downloaded image " + playerAvatarUrl + ": " + statusCode);
+				if (callback != null) {
+					if (statusCode == HttpStatus.SC_OK) {
+						callback.onSuccess(httpResponse.getResult(), PlainServiceResponse.success());
+					} else {
+						callback.onFailure(PlainServiceResponse.error(-3, "HTTP Error " + statusCode));
+					}
+				}
+			}
+
+			@Override
+			public void failed(Throwable t) {
+				if (callback != null)
+					callback.onFailure(PlainServiceResponse.error(-4, t.getMessage()));
+			}
+
+			@Override
+			public void cancelled() {
+				if (callback != null)
+					callback.onFailure(PlainServiceResponse.error(-2, "Operation cancelled"));
+			}
+		});
 	}
 
 	/**

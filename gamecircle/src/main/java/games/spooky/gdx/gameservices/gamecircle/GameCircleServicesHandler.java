@@ -24,13 +24,7 @@
 package games.spooky.gdx.gameservices.gamecircle;
 
 import android.app.Activity;
-
-import com.amazon.ags.api.AGResponseCallback;
-import com.amazon.ags.api.AGResponseHandle;
-import com.amazon.ags.api.AmazonGamesCallback;
-import com.amazon.ags.api.AmazonGamesClient;
-import com.amazon.ags.api.AmazonGamesFeature;
-import com.amazon.ags.api.AmazonGamesStatus;
+import com.amazon.ags.api.*;
 import com.amazon.ags.api.achievements.GetAchievementsResponse;
 import com.amazon.ags.api.achievements.UpdateProgressResponse;
 import com.amazon.ags.api.leaderboards.GetPlayerScoreResponse;
@@ -44,15 +38,14 @@ import com.amazon.ags.api.whispersync.GameDataMap;
 import com.amazon.ags.api.whispersync.WhispersyncClient;
 import com.amazon.ags.api.whispersync.model.SyncableString;
 import com.amazon.ags.constants.LeaderboardFilter;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.LifecycleListener;
+import com.badlogic.gdx.Net;
 import com.badlogic.gdx.backends.android.AndroidApplication;
+import com.badlogic.gdx.net.HttpStatus;
 import com.badlogic.gdx.utils.Base64Coder;
-
-import games.spooky.gdx.gameservices.ConnectionHandler;
-import games.spooky.gdx.gameservices.PlainServiceResponse;
-import games.spooky.gdx.gameservices.ServiceCallback;
-import games.spooky.gdx.gameservices.ServiceResponse;
-import games.spooky.gdx.gameservices.TransformIterable;
+import com.badlogic.gdx.utils.Pools;
+import games.spooky.gdx.gameservices.*;
 import games.spooky.gdx.gameservices.achievement.Achievement;
 import games.spooky.gdx.gameservices.achievement.AchievementsHandler;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
@@ -239,8 +232,36 @@ public class GameCircleServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public String getPlayerAvatarUrl() {
-		return playerAvatarUrl;
+	public void getPlayerAvatar(final ServiceCallback<byte[]> callback) {
+		Net.HttpRequest httpRequest = Pools.obtain(Net.HttpRequest.class);
+		httpRequest.setMethod(Net.HttpMethods.GET);
+		httpRequest.setUrl(playerAvatarUrl);
+
+		Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
+			@Override
+			public void handleHttpResponse(Net.HttpResponse httpResponse) {
+				final int statusCode = httpResponse.getStatus().getStatusCode();
+				if (callback != null) {
+					if (statusCode == HttpStatus.SC_OK) {
+						callback.onSuccess(httpResponse.getResult(), PlainServiceResponse.success());
+					} else {
+						callback.onFailure(PlainServiceResponse.error(-3, "HTTP Error " + statusCode));
+					}
+				}
+			}
+
+			@Override
+			public void failed(Throwable t) {
+				if (callback != null)
+					callback.onFailure(PlainServiceResponse.error(-4, t.getMessage()));
+			}
+
+			@Override
+			public void cancelled() {
+				if (callback != null)
+					callback.onFailure(PlainServiceResponse.error(-2, "Operation cancelled"));
+			}
+		});
 	}
 
 	// Achievements

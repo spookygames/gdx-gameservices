@@ -25,8 +25,8 @@ package games.spooky.gdx.gameservices.playtomic;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-
 import games.spooky.gdx.gameservices.ConnectionHandler;
+import games.spooky.gdx.gameservices.PlainServiceResponse;
 import games.spooky.gdx.gameservices.ServiceCallback;
 import games.spooky.gdx.gameservices.ServiceResponse;
 import games.spooky.gdx.gameservices.achievement.Achievement;
@@ -101,8 +101,8 @@ public class PlaytomicServicesHandler implements ConnectionHandler, Leaderboards
 	}
 
 	@Override
-	public String getPlayerAvatarUrl() {
-		return null;
+	public void getPlayerAvatar(final ServiceCallback<byte[]> callback) {
+		if (callback != null) callback.onSuccess(null, PlainServiceResponse.success());
 	}
 
 	public String getPlayerSource() {
