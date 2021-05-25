@@ -25,7 +25,6 @@ package games.spooky.gdx.gameservices.googleplay.desktop;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.model.File;
-
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
 
 public class GooglePlaySnapshotWrapper implements SavedGame {

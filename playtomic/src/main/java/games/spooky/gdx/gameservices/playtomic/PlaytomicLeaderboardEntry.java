@@ -23,9 +23,9 @@
  */
 package games.spooky.gdx.gameservices.playtomic;
 
-import java.util.Date;
-
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
+
+import java.util.Date;
 
 public class PlaytomicLeaderboardEntry implements LeaderboardEntry {
 

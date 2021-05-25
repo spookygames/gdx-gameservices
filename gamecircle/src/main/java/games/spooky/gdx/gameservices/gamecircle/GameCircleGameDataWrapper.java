@@ -24,7 +24,6 @@
 package games.spooky.gdx.gameservices.gamecircle;
 
 import com.amazon.ags.api.whispersync.model.SyncableElement;
-
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
 
 public class GameCircleGameDataWrapper implements SavedGame {

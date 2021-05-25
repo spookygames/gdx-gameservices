@@ -24,7 +24,6 @@
 package games.spooky.gdx.gameservices.gamecircle;
 
 import com.amazon.ags.api.leaderboards.Score;
-
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
 
 import java.util.Date;

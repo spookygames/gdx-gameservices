@@ -25,13 +25,8 @@ package games.spooky.gdx.gameservices.demo.playtomic;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-
 import games.spooky.gdx.gameservices.ConnectionHandler;
-import games.spooky.gdx.gameservices.demo.AchievementsDemoTable;
-import games.spooky.gdx.gameservices.demo.ConnectionDemoTable;
-import games.spooky.gdx.gameservices.demo.GdxGameservicesDemo;
-import games.spooky.gdx.gameservices.demo.LeaderboardsDemoTable;
-import games.spooky.gdx.gameservices.demo.SavedGamesDemoTable;
+import games.spooky.gdx.gameservices.demo.*;
 import games.spooky.gdx.gameservices.playtomic.PlaytomicNet;
 import games.spooky.gdx.gameservices.playtomic.PlaytomicServicesHandler;
 import games.spooky.gdx.nativefilechooser.desktop.DesktopFileChooser;

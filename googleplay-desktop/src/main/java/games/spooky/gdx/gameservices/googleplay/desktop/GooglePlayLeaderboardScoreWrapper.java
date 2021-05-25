@@ -23,9 +23,9 @@
  */
 package games.spooky.gdx.gameservices.googleplay.desktop;
 
-import java.util.Date;
-
 import com.google.api.services.games.model.LeaderboardEntry;
+
+import java.util.Date;
 
 public class GooglePlayLeaderboardScoreWrapper
 		implements games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry {

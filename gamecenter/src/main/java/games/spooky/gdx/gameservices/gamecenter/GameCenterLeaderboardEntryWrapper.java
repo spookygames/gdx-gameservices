@@ -23,11 +23,10 @@
  */
 package games.spooky.gdx.gameservices.gamecenter;
 
-import java.util.Date;
-
+import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
 import org.robovm.apple.gamekit.GKScore;
 
-import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
+import java.util.Date;
 
 public class GameCenterLeaderboardEntryWrapper implements LeaderboardEntry {
 

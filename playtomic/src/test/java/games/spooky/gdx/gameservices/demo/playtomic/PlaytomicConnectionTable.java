@@ -28,7 +28,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-
 import games.spooky.gdx.gameservices.ConnectionHandler;
 import games.spooky.gdx.gameservices.demo.ConnectionDemoTable;
 import games.spooky.gdx.gameservices.playtomic.PlaytomicServicesHandler;

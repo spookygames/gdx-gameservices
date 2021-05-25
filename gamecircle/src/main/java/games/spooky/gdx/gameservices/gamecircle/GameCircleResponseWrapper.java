@@ -24,7 +24,6 @@
 package games.spooky.gdx.gameservices.gamecircle;
 
 import com.amazon.ags.api.RequestResponse;
-
 import games.spooky.gdx.gameservices.ServiceResponse;
 
 class GameCircleResponseWrapper implements ServiceResponse {

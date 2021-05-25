@@ -23,9 +23,8 @@
  */
 package games.spooky.gdx.gameservices.gamecenter;
 
-import org.robovm.apple.foundation.NSError;
-
 import games.spooky.gdx.gameservices.ServiceResponse;
+import org.robovm.apple.foundation.NSError;
 
 class GameCenterErrorWrapper implements ServiceResponse {
 

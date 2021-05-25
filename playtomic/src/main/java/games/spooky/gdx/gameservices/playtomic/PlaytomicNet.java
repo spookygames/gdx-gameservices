@@ -23,9 +23,6 @@
  */
 package games.spooky.gdx.gameservices.playtomic;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net.HttpMethods;
 import com.badlogic.gdx.Net.HttpRequest;
@@ -33,17 +30,14 @@ import com.badlogic.gdx.Net.HttpResponse;
 import com.badlogic.gdx.Net.HttpResponseListener;
 import com.badlogic.gdx.net.HttpRequestHeader;
 import com.badlogic.gdx.net.HttpStatus;
-import com.badlogic.gdx.utils.Base64Coder;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonReader;
-import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.utils.JsonValue.ValueType;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
-
 import games.spooky.gdx.gameservices.ServiceCallback;
 
-import com.badlogic.gdx.utils.Pools;
-import com.badlogic.gdx.utils.SerializationException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.lang.StringBuilder;
 
 public class PlaytomicNet {
 

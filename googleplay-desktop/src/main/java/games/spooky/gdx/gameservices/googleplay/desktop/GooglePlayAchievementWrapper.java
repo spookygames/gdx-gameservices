@@ -24,7 +24,6 @@
 package games.spooky.gdx.gameservices.googleplay.desktop;
 
 import com.google.api.services.games.model.PlayerAchievement;
-
 import games.spooky.gdx.gameservices.achievement.Achievement;
 import games.spooky.gdx.gameservices.achievement.AchievementState;
 

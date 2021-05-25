@@ -24,9 +24,7 @@
 package games.spooky.gdx.gameservices.googleplay;
 
 import android.support.annotation.NonNull;
-
 import com.google.android.gms.common.api.Status;
-
 import games.spooky.gdx.gameservices.ServiceResponse;
 
 class GooglePlayServicesStatusWrapper implements ServiceResponse {

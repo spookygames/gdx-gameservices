@@ -23,10 +23,9 @@
  */
 package games.spooky.gdx.gameservices.gamecenter;
 
-import org.robovm.apple.gamekit.GKAchievement;
-
 import games.spooky.gdx.gameservices.achievement.Achievement;
 import games.spooky.gdx.gameservices.achievement.AchievementState;
+import org.robovm.apple.gamekit.GKAchievement;
 
 public class GameCenterAchievementWrapper implements Achievement {
 

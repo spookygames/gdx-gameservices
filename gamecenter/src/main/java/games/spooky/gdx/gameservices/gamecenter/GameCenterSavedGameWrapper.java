@@ -23,9 +23,8 @@
  */
 package games.spooky.gdx.gameservices.gamecenter;
 
-import org.robovm.apple.gamekit.GKSavedGame;
-
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
+import org.robovm.apple.gamekit.GKSavedGame;
 
 public class GameCenterSavedGameWrapper implements SavedGame {
 

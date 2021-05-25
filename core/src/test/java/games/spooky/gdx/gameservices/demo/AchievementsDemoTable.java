@@ -29,7 +29,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-
 import games.spooky.gdx.gameservices.ServiceCallback;
 import games.spooky.gdx.gameservices.ServiceResponse;
 import games.spooky.gdx.gameservices.achievement.Achievement;
