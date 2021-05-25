@@ -13,7 +13,7 @@ Add following **bold** parts into your _build.gradle_ file:
 <pre>
     allprojects {
         ext {
-            <b>gdxGameservicesVersion = '1.2.0'</b>
+            <b>gdxGameservicesVersion = '1.2.1'</b>
         }
     }
 
