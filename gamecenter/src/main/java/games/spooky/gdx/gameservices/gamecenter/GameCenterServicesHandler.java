@@ -41,12 +41,17 @@ import org.robovm.apple.uikit.*;
 import org.robovm.objc.block.VoidBlock1;
 import org.robovm.objc.block.VoidBlock2;
 
-@SuppressWarnings("deprecation")
+/**
+ * Game services handler for Apple Game Center.
+ */
 public class GameCenterServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
+
+	private boolean authenticated = false;
 
 	@Override
 	public boolean isLoggedIn() {
-		return GKLocalPlayer.getLocalPlayer().isAuthenticated();
+//		return GKLocalPlayer.getLocalPlayer().isAuthenticated();	// Does not seem to work
+		return authenticated;
 	}
 
 	@Override
@@ -57,12 +62,13 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 				@Override
 				public void invoke(UIViewController viewController, NSError nsError) {
 					final GameCenterErrorWrapper response = new GameCenterErrorWrapper(nsError);
-					if (localPlayer.isAuthenticated()) {
-						debug("Successfully logged into GameCenter");
+					if (response.isSuccessful()) {
+						debug("Successfully logged into Game Center");
+						authenticated = true;
 						callback.onSuccess(null, response);
 					} else {
 						// GameCenter is disabled or operation was cancelled by user
-						debug("Game Center account is required");
+						error("Game Center account is required");
 						callback.onFailure(response);
 					}
 				}
@@ -72,19 +78,17 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
 	@Override
 	public void logout() {
-		if (isLoggedIn()) {
-			// TODO
-		}
+		authenticated = false;
 	}
 
 	@Override
 	public String getPlayerId() {
-		return GKLocalPlayer.getLocalPlayer().getPlayerID();
+		return GKLocalPlayer.getLocalPlayer().getTeamPlayerID();
 	}
 
 	@Override
 	public String getPlayerName() {
-		// getAlias() matches wanted behavior more than getDisplayName()
+		// getAlias() matches expected behavior more than getDisplayName()
 		return GKLocalPlayer.getLocalPlayer().getAlias();
 	}
 
@@ -213,7 +217,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 			@Override
 			public void invoke(NSError error) {
 	            if (error == null) {
-	                debug("submitted score successfully");
+	                debug("Submitted score successfully");
 	            }
 			}
 		});

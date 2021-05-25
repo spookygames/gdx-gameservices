@@ -8,10 +8,10 @@ targetCompatibility = 1.6
 project.archivesBaseName = "$libName-${project.name}"
 
 dependencies {
-    compile project(':core')
-    compile "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
-    compile "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
-    compile "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
+    implementation project(':core')
+    implementation "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
+    implementation "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
+    implementation "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"
 }
 
 license.includes(["**/*.java"])
