@@ -25,6 +25,7 @@ package games.spooky.gdx.gameservices.gamecenter;
 
 import games.spooky.gdx.gameservices.ServiceResponse;
 import org.robovm.apple.foundation.NSError;
+import org.robovm.apple.foundation.NSErrorCode;
 
 class GameCenterErrorWrapper implements ServiceResponse {
 
@@ -42,7 +43,12 @@ class GameCenterErrorWrapper implements ServiceResponse {
 
 	@Override
 	public int getErrorCode() {
-		return error == null ? 0 : (int) error.getErrorCode().value();
+		if (error == null)
+			return 0;
+		NSErrorCode errorCode = error.getErrorCode();
+		if (errorCode == null)
+			return 0;
+		return (int) errorCode.value();
 	}
 
 	@Override
