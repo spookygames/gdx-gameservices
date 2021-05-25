@@ -35,9 +35,13 @@ import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions.Collection;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardsHandler;
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
 import games.spooky.gdx.gameservices.savedgame.SavedGamesHandler;
-import org.robovm.apple.foundation.*;
+import org.robovm.apple.foundation.NSArray;
+import org.robovm.apple.foundation.NSData;
+import org.robovm.apple.foundation.NSError;
+import org.robovm.apple.foundation.NSRange;
 import org.robovm.apple.gamekit.*;
-import org.robovm.apple.uikit.*;
+import org.robovm.apple.uikit.UIImage;
+import org.robovm.apple.uikit.UIViewController;
 import org.robovm.objc.block.VoidBlock1;
 import org.robovm.objc.block.VoidBlock2;
 
@@ -357,23 +361,5 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
 	protected void error(String error) {
 
-	}
-
-	public static void alert(String text) {
-		if (FoundationVersionNumber.getVersion() < FoundationVersionNumber.Version_iOS_8_0) {
-			// Pre iOS8
-			UIAlertView alert = new UIAlertView();
-			alert.setTitle("Info");
-			alert.setMessage(text);
-			alert.addButton("Ok");
-			alert.show();
-		} else {
-			// Post iOS8
-			UIAlertController alert = new UIAlertController("Info", text, UIAlertControllerStyle.Alert);
-			alert.addAction(new UIAlertAction("Ok", UIAlertActionStyle.Default, new VoidBlock1<UIAlertAction>() {
-				@Override
-				public void invoke(UIAlertAction action) { }
-			}));
-		}
 	}
 }
