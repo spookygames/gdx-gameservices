@@ -50,12 +50,15 @@ import org.robovm.objc.block.VoidBlock2;
  */
 public class GameCenterServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
 
-	private boolean authenticated = false;
+	private final UIViewController viewController;
+
+	public GameCenterServicesHandler(UIViewController viewController) {
+		this.viewController = viewController;
+	}
 
 	@Override
 	public boolean isLoggedIn() {
-//		return GKLocalPlayer.getLocalPlayer().isAuthenticated();	// Does not seem to work
-		return authenticated;
+		return GKLocalPlayer.getLocalPlayer().isAuthenticated();
 	}
 
 	@Override
@@ -64,11 +67,13 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 			final GKLocalPlayer localPlayer = GKLocalPlayer.getLocalPlayer();
 			localPlayer.setAuthenticateHandler(new VoidBlock2<UIViewController, NSError>() {
 				@Override
-				public void invoke(UIViewController viewController, NSError nsError) {
+				public void invoke(UIViewController view, NSError nsError) {
 					final GameCenterErrorWrapper response = new GameCenterErrorWrapper(nsError);
 					if (response.isSuccessful()) {
+						if (view != null) {
+							viewController.presentViewController(view, true, null);
+						}
 						debug("Successfully logged into Game Center");
-						authenticated = true;
 						callback.onSuccess(null, response);
 					} else {
 						// GameCenter is disabled or operation was cancelled by user
@@ -82,7 +87,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
 	@Override
 	public void logout() {
-		authenticated = false;
+		// Handled device-wide, not here
 	}
 
 	@Override
