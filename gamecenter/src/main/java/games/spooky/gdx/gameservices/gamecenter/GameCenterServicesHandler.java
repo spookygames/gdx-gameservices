@@ -112,7 +112,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 				final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
 				if (response.isSuccessful()) {
 					try {
-						byte[] bytes = image == null ? null : image.toPNGData().getBytes();
+						byte[] bytes = imageToBytes(image);
 						callback.onSuccess(bytes, response);
 					} catch (UnsatisfiedLinkError e) {
 						callback.onFailure(PlainServiceResponse.error(e.getMessage()));
@@ -366,5 +366,16 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
 	protected void error(String error) {
 
+	}
+
+	private static byte[] imageToBytes(UIImage image) {
+		if (image == null)
+			return null;
+		NSData data = image.toPNGData();
+		if (data == null)
+			data = image.toJPEGData(1.0);
+		if (data == null)
+			return null;
+		return data.getBytes();
 	}
 }
