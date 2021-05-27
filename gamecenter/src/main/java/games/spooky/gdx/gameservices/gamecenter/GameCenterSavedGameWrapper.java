@@ -24,7 +24,11 @@
 package games.spooky.gdx.gameservices.gamecenter;
 
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
+
+import org.robovm.apple.foundation.NSDate;
 import org.robovm.apple.gamekit.GKSavedGame;
+
+import java.util.Date;
 
 public class GameCenterSavedGameWrapper implements SavedGame {
 
@@ -52,7 +56,13 @@ public class GameCenterSavedGameWrapper implements SavedGame {
 
 	@Override
 	public long getTimestamp() {
-		return wrapped.getModificationDate().toDate().getTime();
+		NSDate nsDate = wrapped.getModificationDate();
+		if (nsDate == null)
+			return 0L;
+		Date date = nsDate.toDate();
+		if (date == null)
+			return 0L;
+		return date.getTime();
 	}
 
 	@Override

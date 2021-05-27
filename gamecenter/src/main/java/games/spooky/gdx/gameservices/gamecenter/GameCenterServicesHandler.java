@@ -23,6 +23,8 @@
  */
 package games.spooky.gdx.gameservices.gamecenter;
 
+import com.badlogic.gdx.utils.Array;
+
 import games.spooky.gdx.gameservices.ConnectionHandler;
 import games.spooky.gdx.gameservices.PlainServiceResponse;
 import games.spooky.gdx.gameservices.ServiceCallback;
@@ -114,7 +116,7 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 					try {
 						byte[] bytes = imageToBytes(image);
 						callback.onSuccess(bytes, response);
-					} catch (UnsatisfiedLinkError e) {
+					} catch (Throwable e) {
 						callback.onFailure(PlainServiceResponse.error(e.getMessage()));
 					}
 				} else {
@@ -135,13 +137,15 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 				
             	final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
             	if (response.isSuccessful()) {
-					callback.onSuccess(
-							new TransformIterable<GKAchievement, Achievement>(achievements) {
-								@Override
-								protected Achievement transform(GKAchievement item) {
-									return new GameCenterAchievementWrapper(item);
-								}
-							}, response);
+					Iterable<Achievement> iterable = achievements == null ?
+						new Array<Achievement>(0) :
+						new TransformIterable<GKAchievement, Achievement>(achievements) {
+							@Override
+							protected Achievement transform(GKAchievement item) {
+								return new GameCenterAchievementWrapper(item);
+							}
+						};
+					callback.onSuccess(iterable, response);
             	} else {
 					callback.onFailure(response);
             	}
@@ -200,13 +204,15 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 
             	final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
             	if (response.isSuccessful()) {
-					callback.onSuccess(
-							new TransformIterable<GKScore, LeaderboardEntry>(scores) {
-								@Override
-								protected LeaderboardEntry transform(GKScore item) {
-									return new GameCenterLeaderboardEntryWrapper(item);
-								}
-							}, response);
+					Iterable<LeaderboardEntry> iterable = scores == null ?
+						new Array<LeaderboardEntry>(0) :
+						new TransformIterable<GKScore, LeaderboardEntry>(scores) {
+							@Override
+							protected LeaderboardEntry transform(GKScore item) {
+								return new GameCenterLeaderboardEntryWrapper(item);
+							}
+						};
+					callback.onSuccess(iterable, response);
             	} else {
 					callback.onFailure(response);
             	}
@@ -272,13 +278,13 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 				
             	final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
             	if (response.isSuccessful()) {
-					callback.onSuccess(
-							new TransformIterable<GKSavedGame, SavedGame>(savedGames) {
-								@Override
-								protected SavedGame transform(GKSavedGame item) {
-									return new GameCenterSavedGameWrapper(item);
-								}
-							}, response);
+					Iterable<SavedGame> iterable = savedGames == null ? new Array<SavedGame>(0) : new TransformIterable<GKSavedGame, SavedGame>(savedGames) {
+						@Override
+						protected SavedGame transform(GKSavedGame item) {
+							return new GameCenterSavedGameWrapper(item);
+						}
+					};
+					callback.onSuccess(iterable, response);
             	} else {
 					callback.onFailure(response);
             	}
