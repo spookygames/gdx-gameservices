@@ -55,7 +55,7 @@ public class AchievementsDemoTable extends GdxGameservicesDemoTable {
 					achievements.getAchievements(new ServiceCallback<Iterable<Achievement>>() {
 						@Override
 						public void onSuccess(Iterable<Achievement> result, ServiceResponse response) {
-							log(response.getErrorMessage());
+							log(response.getErrorMessage() == null ? "Received achievements" : response.getErrorMessage());
 							for (Achievement entry : result)
 								log(entry.toString());
 						}

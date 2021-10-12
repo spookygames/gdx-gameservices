@@ -51,7 +51,7 @@ public class ConnectionDemoTable extends GdxGameservicesDemoTable {
 							@Override
 							public void onSuccess(Void result, ServiceResponse response) {
 								button.setText("Logout");
-								log(response.getErrorMessage());
+								log(response.getErrorMessage() == null ? "Connected" : response.getErrorMessage());
 							}
 
 							@Override
