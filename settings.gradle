@@ -1,2 +1,2 @@
-include 'core', 'googleplay-android', 'googleplay-desktop', 'playtomic', 'gamecenter', 'gamecircle'
+include 'core', 'googleplay-android', 'googleplay-desktop', 'gamecenter'
 

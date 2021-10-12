@@ -2,7 +2,7 @@
 
 Game services wrapper for [libgdx](https://github.com/libgdx/libgdx). An alternative to the excellent [gdx-gamesvcs](https://github.com/MrStahlfelge/gdx-gamesvcs) library from MrStahlfelge, check it out!
 
-Currently supports **Google Play Games** on desktop and android, **Amazon GameCircle** on android, **Game Center** on iOS (using mobidevelop's roboVM fork) and **Playtomic** on every platform.
+Currently supports **Google Play Games** on desktop and android and **Game Center** on iOS (using mobidevelop's roboVM fork).
 
 ## Setup
 
@@ -50,18 +50,6 @@ Add following **bold** parts into your _build.gradle_ file:
             compile project(":core")
             ...
             <b>compile "games.spooky.gdx:gdx-gameservices-googleplay-android:$gdxGameservicesVersion"</b>
-        }
-    }
-
-    // For Amazon GameCircle on Android
-    project(":android") {
-
-        ...
-
-        dependencies {
-            compile project(":core")
-            ...
-            <b>compile "games.spooky.gdx:gdx-gameservices-gamecircle:$gdxGameservicesVersion"</b>
         }
     }
 
@@ -267,9 +255,7 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 
 * [Google Play Games (android)](gdx-gameservices-googleplay-android/README.md)
 * [Google Play Games (desktop)](gdx-gameservices-googleplay-desktop/README.md)
-* [Amazon GameCircle (android)](gdx-gameservices-gamecircle/README.md)
 * [Game Center (ios - roboVM)](gdx-gameservices-gamecenter/README.md)
-* [Playtomic](gdx-gameservices-playtomic/README.md)
 
 ## Feature support
 
@@ -277,9 +263,7 @@ Most methods take as last parameter a ServiceCallback<T> object, exhibiting two 
 | :--- | :---: | :---: | :---: | :---: |
 | Google Play Games (android) | ✓ | ✓ | ✓ | ✓ |
 | Google Play Games (desktop) | ✓ | ✓ | ✓ | ✓ |
-| Amazon GameCircle (android) | ✓ | ✓ | ✓ | ✓ |
 | Game Center (ios - roboVM)  | ✓ | ✓ | ✓ | ✓ |
-| Playtomic                   | ✓ | ✓ | ✓ | ✕ |
 
 ## Roadmap
 
