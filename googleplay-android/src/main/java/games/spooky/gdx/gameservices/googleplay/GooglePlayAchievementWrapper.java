@@ -23,7 +23,7 @@
  */
 package games.spooky.gdx.gameservices.googleplay;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import games.spooky.gdx.gameservices.achievement.Achievement;
 import games.spooky.gdx.gameservices.achievement.AchievementState;
 

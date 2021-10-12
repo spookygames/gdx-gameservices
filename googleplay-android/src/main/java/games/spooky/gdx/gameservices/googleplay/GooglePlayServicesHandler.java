@@ -36,7 +36,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.view.View;
 import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -398,7 +398,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 	public void getPlayerScore(String leaderboardId, LeaderboardOptions options, final ServiceCallback<LeaderboardEntry> callback) {
 		int collection;
 		if (options != null && options.collection == Collection.Friends) {
-			collection = LeaderboardVariant.COLLECTION_SOCIAL;
+			collection = LeaderboardVariant.COLLECTION_FRIENDS;
 		} else {
 			collection = LeaderboardVariant.COLLECTION_PUBLIC;
 		}
@@ -454,7 +454,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 			}
 			Collection c = options.collection;
 			if (c == Collection.Friends) {
-				collection = LeaderboardVariant.COLLECTION_SOCIAL;
+				collection = LeaderboardVariant.COLLECTION_FRIENDS;
 			} else {
 				collection = LeaderboardVariant.COLLECTION_PUBLIC;
 			}

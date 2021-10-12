@@ -6,7 +6,7 @@ Currently supports **Google Play Games** on desktop and android and **Game Cente
 
 ## Setup
 
-Your project needs libgdx >= 1.9.4.
+Your project needs libgdx >= 1.10.0.
 
 Add following **bold** parts into your _build.gradle_ file:
 

@@ -6,7 +6,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.4'
-        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.13'
+        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.14'
     }
 }
 
@@ -21,8 +21,8 @@ allprojects {
 
     ext {
         libName = 'gdx-gameservices'
-        gdxVersion = '1.9.4'
-        roboVMVersion = '2.3.13'
+        gdxVersion = '1.10.0'
+        roboVMVersion = '2.3.14'
         nativefilechooserVersion = '2.0.0'
     }
 

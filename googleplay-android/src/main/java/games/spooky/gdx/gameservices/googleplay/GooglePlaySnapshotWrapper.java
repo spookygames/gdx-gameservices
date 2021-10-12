@@ -23,7 +23,7 @@
  */
 package games.spooky.gdx.gameservices.googleplay;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.google.android.gms.games.snapshot.SnapshotMetadata;
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
 

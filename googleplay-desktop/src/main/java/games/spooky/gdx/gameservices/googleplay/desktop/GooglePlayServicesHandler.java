@@ -42,7 +42,7 @@ import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
@@ -82,7 +82,7 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
     protected Games games;
     protected Drive drive;
 
-    private final JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+    private final JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
     
     private GoogleClientSecrets clientSecrets;
     private FileDataStoreFactory dataStoreFactory;

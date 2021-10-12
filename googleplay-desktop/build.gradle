@@ -7,15 +7,15 @@ targetCompatibility = 1.6
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
     
 ext {
-	gapiVersion = '1.22.0'
+	gapiVersion = '1.32.1'
 }
 
 dependencies {
     compile project(':core')
 
-    compile "com.google.apis:google-api-services-games:v1-rev239-$gapiVersion"
+    compile "com.google.apis:google-api-services-games:v1-rev20210401-$gapiVersion"
     compile "com.google.oauth-client:google-oauth-client-jetty:$gapiVersion"
-    compile "com.google.apis:google-api-services-drive:v3-rev77-$gapiVersion"
+    compile "com.google.apis:google-api-services-drive:v3-rev20210919-$gapiVersion"
 
     testCompile project(path: ':core', configuration: 'demo')
     testCompile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
@@ -36,7 +36,7 @@ task demo(dependsOn: classes, type: JavaExec) {
     main = demoClass
     classpath = sourceSets.test.runtimeClasspath
     standardInput = System.in
-    ignoreExitValue = true
+    setIgnoreExitValue(true)
 }
 
 task demoJar(type: Jar) {
