@@ -23,49 +23,31 @@
  */
 package games.spooky.gdx.gameservices;
 
-public class PlainServiceResponse implements ServiceResponse {
+public class ExceptionServiceResponse implements ServiceResponse {
 
-	private static final PlainServiceResponse SUCCESS = new PlainServiceResponse(true, 0, null);
+	private final Throwable exception;
 
-	private final boolean successful;
-	private final int errorCode;
-	private final String errorMessage;
-
-	public PlainServiceResponse(boolean successful, int errorCode, String errorMessage) {
+	public ExceptionServiceResponse(Throwable exception) {
 		super();
-		this.successful = successful;
-		this.errorCode = errorCode;
-		this.errorMessage = errorMessage;
+		this.exception = exception;
 	}
 
 	@Override
 	public boolean isSuccessful() {
-		return successful;
+		return false;
 	}
 
 	@Override
 	public int getErrorCode() {
-		return errorCode;
+		return exception.hashCode();
 	}
 
 	@Override
 	public String getErrorMessage() {
-		return errorMessage;
+		return exception.getMessage();
 	}
 
-	public static ServiceResponse success() {
-		return SUCCESS;
-	}
-	
-	public static ServiceResponse error(int errorCode) {
-		return error(errorCode, null);
-	}
-	
-	public static ServiceResponse error(String errorMessage) {
-		return error(-1, errorMessage);
-	}
-	
-	public static ServiceResponse error(int errorCode, String errorMessage) {
-		return new PlainServiceResponse(false, errorCode, errorMessage);
+	public Throwable getException() {
+		return exception;
 	}
 }
