@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2017-2021 Spooky Games
+ * Copyright (c) 2017-2023 Spooky Games
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -295,7 +295,11 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 	public void login(ServiceCallback<Void> callback) {
 		if (!isLoggedIn()) {
 			this.connectionCallback = callback;
-			client.connect();
+			try {
+				client.connect();
+			} catch (Exception e) {
+				callback.onFailure(new ExceptionServiceResponse(e));
+			}
 		}
 	}
 
