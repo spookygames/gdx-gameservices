@@ -1,17 +1,26 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.3.0'
+    }
+}
 
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion = 33
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 30
+        minSdkVersion 21
+        targetSdkVersion 33
     }
     
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
     
     sourceSets {
@@ -29,7 +38,7 @@ project.archivesBaseName = "$libName-${project.name}"
 dependencies {
     api project(':core')
     api "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
-    api 'com.google.android.gms:play-services-games:21.0.0'
+    api "com.google.android.gms:play-services-games-v2:17.0.0"
 }
 
 task javadoc(type: Javadoc) {

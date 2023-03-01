@@ -1,14 +1,22 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.18'
+    }
+}
 
-apply plugin : 'java'
+apply plugin : 'java-library'
 apply plugin : 'robovm'
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 project.archivesBaseName = "$libName-${project.name}"
 
 dependencies {
-    implementation project(':core')
+    api project(':core')
     implementation "com.badlogicgames.gdx:gdx-backend-robovm:$gdxVersion"
     implementation "com.mobidevelop.robovm:robovm-rt:$roboVMVersion"
     implementation "com.mobidevelop.robovm:robovm-cocoatouch:$roboVMVersion"

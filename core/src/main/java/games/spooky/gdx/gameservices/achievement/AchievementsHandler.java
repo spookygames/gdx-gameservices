@@ -23,7 +23,7 @@
  */
 package games.spooky.gdx.gameservices.achievement;
 
-import games.spooky.gdx.gameservices.ServiceCallback;
+import games.spooky.gdx.gameservices.AsyncServiceResult;
 
 public interface AchievementsHandler {
 
@@ -33,10 +33,9 @@ public interface AchievementsHandler {
 	 * others will return all available achievements. It is YOUR responsibility
 	 * to check achievement status and filter out if need be.
 	 * 
-	 * @param callback
-	 *            a ServiceCallback to handle the Iterable result
+	 * @return an AsyncServiceResult to handle the Iterable result
 	 */
-	void getAchievements(ServiceCallback<Iterable<Achievement>> callback);
+	AsyncServiceResult<Iterable<Achievement>> getAchievements();
 
 	/**
 	 * Unlock achievement of given id from game service. Successful unlocking is
@@ -44,9 +43,8 @@ public interface AchievementsHandler {
 	 * 
 	 * @param achievementId
 	 *            id of the achievement to unlock
-	 * @param callback
-	 *            an optional ServiceCallback to handle success/failure
+	 * @return an AsyncServiceResult to handle success/error
 	 */
-	void unlockAchievement(String achievementId, ServiceCallback<Void> callback);
+	AsyncServiceResult<Void> unlockAchievement(String achievementId);
 
 }

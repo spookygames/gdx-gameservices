@@ -1,2 +1,2 @@
-include 'core', 'googleplay-android', 'googleplay-desktop', 'gamecenter'
+include 'core', 'demo-core', 'googleplay-android', 'googleplay-desktop', 'demo-googleplay-desktop', 'gamecenter'
 

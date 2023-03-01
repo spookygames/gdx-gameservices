@@ -1,0 +1,27 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+dependencies {
+    implementation project(':googleplay-desktop')
+    implementation project(':demo-core')
+
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    implementation "games.spooky.gdx:gdx-nativefilechooser-desktop:$nativefilechooserVersion"
+}
+
+license.includes(["**/*.java"])
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    dependsOn configurations.runtimeClasspath
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+
+    manifest {
+        attributes 'Main-Class': "games.spooky.gdx.gameservices.demo.googleplay.GdxGameServicesGooglePlayDemoDesktop"
+    }
+}

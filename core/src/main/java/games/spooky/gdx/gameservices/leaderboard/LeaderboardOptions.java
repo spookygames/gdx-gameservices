@@ -23,17 +23,52 @@
  */
 package games.spooky.gdx.gameservices.leaderboard;
 
+/**
+ * Options to query leaderboard entries.
+ */
 public class LeaderboardOptions {
-	
-	public enum Sort {
-		Top, Bottom, CenteredOnPlayer
+
+	public enum Window {
+		/**
+		 * Only fetch top leaderboard entries.
+		 */
+		Top,
+		/**
+		 * Only fetch leaderboard entries surrounding the player's entry.
+		 */
+		CenteredOnPlayer
 	}
 
-	public enum Collection {
-		Public, Friends
+	public enum Scope {
+		/**
+		 * Fetch from all leaderboard entries.
+		 */
+		Public,
+		/**
+		 * Fetch from friends' leaderboard entries only.
+		 */
+		Friends
 	}
 
-	public Sort sort;
-	public Collection collection;
-	public int itemsPerPage;
+	private final Window window;
+	private final Scope scope;
+	private final int maxResults;
+
+	public LeaderboardOptions(Window window, Scope scope, int maxResults) {
+		this.window = window;
+		this.scope = scope;
+		this.maxResults = maxResults;
+	}
+
+	public Window getWindow() {
+		return window;
+	}
+
+	public Scope getScope() {
+		return scope;
+	}
+
+	public int getMaxResults() {
+		return maxResults;
+	}
 }

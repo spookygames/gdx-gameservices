@@ -23,708 +23,349 @@
  */
 package games.spooky.gdx.gameservices.googleplay;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
-import android.view.View;
-import com.badlogic.gdx.LifecycleListener;
-import com.badlogic.gdx.backends.android.AndroidApplication;
-import com.badlogic.gdx.backends.android.AndroidEventListener;
-import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
+import com.badlogic.gdx.utils.Array;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.images.ImageManager;
-import com.google.android.gms.drive.Drive;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.games.GamesActivityResultCodes;
-import com.google.android.gms.games.achievement.Achievements;
+import com.google.android.gms.games.*;
+import com.google.android.gms.games.achievement.AchievementBuffer;
 import com.google.android.gms.games.leaderboard.LeaderboardScore;
 import com.google.android.gms.games.leaderboard.LeaderboardVariant;
-import com.google.android.gms.games.leaderboard.Leaderboards;
 import com.google.android.gms.games.snapshot.Snapshot;
 import com.google.android.gms.games.snapshot.SnapshotMetadata;
+import com.google.android.gms.games.snapshot.SnapshotMetadataBuffer;
 import com.google.android.gms.games.snapshot.SnapshotMetadataChange;
-import com.google.android.gms.games.snapshot.Snapshots;
+import com.google.android.gms.tasks.*;
 import games.spooky.gdx.gameservices.*;
 import games.spooky.gdx.gameservices.achievement.Achievement;
-import games.spooky.gdx.gameservices.achievement.AchievementsHandler;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions;
-import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions.Collection;
-import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions.Sort;
-import games.spooky.gdx.gameservices.leaderboard.LeaderboardsHandler;
+import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions.Scope;
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
-import games.spooky.gdx.gameservices.savedgame.SavedGamesHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+@SuppressLint("VisibleForTests")
+public class GooglePlayServicesHandler implements GameServicesHandler {
 
-public class GooglePlayServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
+	private Activity activity;
+	private GamesSignInClient authenticationClient;
+	private PlayersClient playersClient;
+	private AchievementsClient achievementsClient;
+	private LeaderboardsClient leaderboardsClient;
+	private SnapshotsClient snapshotsClient;
 
-	public static final int REQUEST_RESOLVE_ERROR = 1001;
-	public static final int REQUEST_LEADERBOARD = 1002;
-
-	private GoogleApiClient client = null;
-	private ImageManager imageManager = null;
-
-	private boolean resolvingError = false;
-
-	private ServiceCallback<Void> connectionCallback;
-
-	private int resolutionPolicy = Snapshots.RESOLUTION_POLICY_LAST_KNOWN_GOOD;
-
-	public GoogleApiClient getGoogleApiClient() {
-		return client;
-	}
+	private int resolutionPolicy = GooglePlaySnapshotResolutionPolicy.LAST_KNOWN_GOOD.rawValue;
 
 	/**
 	 * Get the current resolution policy that should handle {@link Snapshot} conflicts.
 	 * @return the resolution policy
 	 */
-	public int getResolutionPolicy() {
-		return resolutionPolicy;
+	public GooglePlaySnapshotResolutionPolicy getResolutionPolicy() {
+		return GooglePlaySnapshotResolutionPolicy.fromRawValue(resolutionPolicy);
 	}
 
 	/**
 	 * Set the resolution policy that should handle {@link Snapshot} conflicts.
-	 * Input a valid value from @{@link Snapshots} or suffer a hundred painful deaths.
 	 * @param resolutionPolicy the new resolution policy
 	 */
-	public void setResolutionPolicy(int resolutionPolicy) {
+	public void setResolutionPolicy(GooglePlaySnapshotResolutionPolicy resolutionPolicy) {
+		this.resolutionPolicy = resolutionPolicy.rawValue;
+	}
+
+	/**
+	 * Set the resolution policy that should handle {@link Snapshot} conflicts.
+	 * Valid values are accessible from @{@link SnapshotsClient}.
+	 * @param resolutionPolicy the new resolution policy
+	 */
+	public void setResolutionPolicyRaw(int resolutionPolicy) {
 		this.resolutionPolicy = resolutionPolicy;
 	}
 
 	// Lifecycle
 
-	public void setContext(final AndroidApplication app, View view) {
-		addAndroidEventListener(app, initializeContext(app.getContext(), view, false));
-	}
-
-	public void setContext(final AndroidFragmentApplication app, View view) {
-		addAndroidEventListener(app, initializeContext(app.getContext(), view, false));
-	}
-
-	public void setContext(final AndroidApplication app, Context context, View view) {
-		addAndroidEventListener(app, initializeContext(context, view, false));
-	}
-
-	public void setContext(final AndroidFragmentApplication app, Context context, View view) {
-		addAndroidEventListener(app, initializeContext(context, view, false));
-	}
-
-	public void setContext(final AndroidApplication app, View view, boolean handleSaves) {
-		addAndroidEventListener(app, initializeContext(app.getContext(), view, handleSaves));
-	}
-
-	public void setContext(final AndroidFragmentApplication app, View view, boolean handleSaves) {
-		addAndroidEventListener(app, initializeContext(app.getContext(), view, handleSaves));
-	}
-
-	public void setContext(final AndroidApplication app, Context context, View view, boolean handleSaves) {
-		addAndroidEventListener(app, initializeContext(context, view, handleSaves));
-	}
-
-	public void setContext(final AndroidFragmentApplication app, Context context, View view, boolean handleSaves) {
-		addAndroidEventListener(app, initializeContext(context, view, handleSaves));
-	}
-
-	private AndroidEventListener initializeContext(final Context context, View view, boolean handleSaves) {
-		GoogleApiClient.Builder builder = new GoogleApiClient.Builder(context)
-				.addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-					@Override
-					public void onConnected(Bundle bundle) {
-						debug("Google API connected");
-
-						if (isLoggedIn()) {
-
-							if (connectionCallback != null)
-								connectionCallback.onSuccess(null, new GooglePlayServicesBasicResponse(true, 0));
-						}
-					}
-
-					@Override
-					public void onConnectionSuspended(int i) {
-						debug("Google API connection suspended");
-
-						// Attempt to reconnect
-						client.reconnect();
-					}
-				})
-				.addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-					@Override
-					public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-						int errorCode = connectionResult.getErrorCode();
-						error("Google API connection failed " + connectionResult.getErrorMessage() + " (" + errorCode + ")");
-
-						if (resolvingError) {
-							// Already attempting to resolve an error.
-							return;
-						}
-
-						if (connectionResult.hasResolution()) {
-							try {
-								resolvingError = true;
-								connectionResult.startResolutionForResult((Activity) context, REQUEST_RESOLVE_ERROR);
-							} catch (IntentSender.SendIntentException e) {
-								// There was an error with the resolution intent. Try again.
-								client.connect();
-							}
-
-						} else {
-							error("Login failed");
-							resolvingError = true;
-
-							if (connectionCallback != null)
-								connectionCallback.onFailure(new GooglePlayServicesBasicResponse(false, errorCode, "Login failed"));
-						}
-					}
-				})
-				.addApi(Games.API)
-				.addScope(Games.SCOPE_GAMES)
-				.setViewForPopups(view);
-
-		if (handleSaves) {
-			builder.addApi(Drive.API).addScope(Drive.SCOPE_APPFOLDER);
-		}
-
-		client = builder.build();
-		imageManager = ImageManager.create(context);
-
-		return new AndroidEventListener() {
-			@Override
-			public void onActivityResult(int requestCode, final int resultCode, Intent data) {
-				debug("Google API response " + requestCode + " -- " + resultCode);
-
-				if (requestCode == REQUEST_RESOLVE_ERROR) {
-					resolvingError = false;
-
-					switch (resultCode) {
-						case Activity.RESULT_OK:
-							// Make sure the app is not already connected or attempting to connect
-							login(connectionCallback);
-							break;
-
-						case Activity.RESULT_CANCELED:
-							error("Login cancelled");
-
-							if (connectionCallback != null)
-								connectionCallback.onFailure(new GooglePlayServicesBasicResponse(false, resultCode, "Login cancelled"));
-							break;
-
-						case GamesActivityResultCodes.RESULT_SIGN_IN_FAILED:
-						default:
-							error("Login failed");
-
-							if (connectionCallback != null)
-								connectionCallback.onFailure(new GooglePlayServicesBasicResponse(false, resultCode, "Login failed"));
-							break;
-					}
-				}
-
-				if (requestCode == REQUEST_LEADERBOARD && resultCode == GamesActivityResultCodes.RESULT_RECONNECT_REQUIRED) {
-					// Force a disconnect to sync up state, ensuring that client reports "not connected"
-					logout();
-				}
-			}
-		};
-	}
-
-	// Dodgy code from lack of proper interface
-
-	private static void addAndroidEventListener(final AndroidApplication application, final AndroidEventListener androidEventListener) {
-		application.addAndroidEventListener(androidEventListener);
-		application.addLifecycleListener(new LifecycleListener() {
-			@Override
-			public void pause() {
-			}
-
-			@Override
-			public void resume() {
-			}
-
-			@Override
-			public void dispose() {
-				application.removeAndroidEventListener(androidEventListener);
-				application.removeLifecycleListener(this);
-			}
-		});
-	}
-
-	private static void addAndroidEventListener(final AndroidFragmentApplication application, final AndroidEventListener androidEventListener) {
-		application.addAndroidEventListener(androidEventListener);
-		application.addLifecycleListener(new LifecycleListener() {
-			@Override
-			public void pause() {
-			}
-
-			@Override
-			public void resume() {
-			}
-
-			@Override
-			public void dispose() {
-				application.removeAndroidEventListener(androidEventListener);
-				application.removeLifecycleListener(this);
-			}
-		});
+	public void setContext(final Activity activity) {
+		PlayGamesSdk.initialize(activity);
+		this.activity = activity;
+		this.authenticationClient = PlayGames.getGamesSignInClient(activity);
+		this.playersClient = PlayGames.getPlayersClient(activity);
+		this.achievementsClient = PlayGames.getAchievementsClient(activity);
+		this.leaderboardsClient = PlayGames.getLeaderboardsClient(activity);
+		this.snapshotsClient = PlayGames.getSnapshotsClient(activity);
 	}
 
 	// Connection
 
 	@Override
-	public boolean isLoggedIn() {
-		return client != null && client.isConnected();
-	}
-
-	@Override
-	public void login(ServiceCallback<Void> callback) {
-		if (!isLoggedIn()) {
-			this.connectionCallback = callback;
-			try {
-				client.connect();
-			} catch (Exception e) {
-				callback.onFailure(new ExceptionServiceResponse(e));
+	public AsyncServiceResult<Boolean> isLoggedIn() {
+		return new GooglePlayAsyncServiceResult<AuthenticationResult, Boolean>(authenticationClient.isAuthenticated()) {
+			@Override protected Boolean transformResult(AuthenticationResult result) {
+				return result.isAuthenticated();
 			}
-		}
-	}
-
-	public void logout() {
-		if (isLoggedIn()) {
-			client.disconnect();
-		}
+		};
 	}
 
 	@Override
-	public String getPlayerId() {
-		return Games.Players.getCurrentPlayer(client).getPlayerId();
-	}
-
-	@Override
-	public String getPlayerName() {
-		return Games.Players.getCurrentPlayer(client).getDisplayName();
-	}
-
-	@Override
-	public void getPlayerAvatar(final ServiceCallback<byte[]> callback) {
-		final Uri avatarUri = Games.Players.getCurrentPlayer(client).getIconImageUri();
-		if (avatarUri == null) {
-			if (callback != null)
-				callback.onSuccess(null, PlainServiceResponse.success());
-		} else {
-			new Handler(Looper.getMainLooper()).post(new Runnable() {
-				@Override
-				public void run() {
-					ImageManager.OnImageLoadedListener listener = new ImageManager.OnImageLoadedListener() {
-						@Override
-						public void onImageLoaded(Uri uri, Drawable drawable, boolean isRequestedDrawable) {
-							if (drawable == null) {
-								if (callback != null)
-									callback.onSuccess(null, PlainServiceResponse.success());
-								return;
-							}
-
-							byte[] bytes = drawableToBytes(drawable);
-							if (callback != null)
-								callback.onSuccess(bytes, PlainServiceResponse.success());
-						}
-					};
-					imageManager.loadImage(listener, avatarUri);
+	public AsyncServiceResult<Void> login() {
+		return new GooglePlayVoidAsyncServiceResult<>(authenticationClient.isAuthenticated().continueWithTask(new Continuation<AuthenticationResult, Task<AuthenticationResult>>() {
+			@Override
+			public Task<AuthenticationResult> then(@NonNull Task<AuthenticationResult> task) {
+				if (task.isSuccessful() && !task.getResult().isAuthenticated()) {
+					return authenticationClient.signIn();
+				} else {
+					return task;
 				}
-			});
-		}
+			}
+		}));
+	}
+
+	@Override
+	public AsyncServiceResult<String> getPlayerId() {
+		return new GooglePlayAsyncServiceResult<Player, String>(playersClient.getCurrentPlayer()) {
+			@Override
+			protected String transformResult(Player player) {
+				return player.getPlayerId();
+			}
+		};
+	}
+
+	@Override
+	public AsyncServiceResult<String> getPlayerName() {
+		return new GooglePlayAsyncServiceResult<Player, String>(playersClient.getCurrentPlayer()) {
+			@Override
+			protected String transformResult(Player player) {
+				return player.getDisplayName();
+			}
+		};
+	}
+
+	@Override
+	public AsyncServiceResult<byte[]> getPlayerAvatar() {
+		return new CallbackAsyncServiceResult<Drawable, byte[]>() {
+			@Override
+			protected void callAsync(final Callback<Drawable> callback) {
+				playersClient.getCurrentPlayer().addOnCompleteListener(new OnCompleteListener<Player>() {
+					@Override
+					public void onComplete(@NonNull Task<Player> task) {
+						if (task.isSuccessful()) {
+							final Uri avatarUri = task.getResult().getIconImageUri();
+							if (avatarUri == null) {
+								callback.onSuccess(null);
+							} else {
+								new Handler(Looper.getMainLooper()).post(new Runnable() {
+									@Override
+									public void run() {
+										ImageManager.OnImageLoadedListener listener = new ImageManager.OnImageLoadedListener() {
+											@Override
+											public void onImageLoaded(@NonNull Uri uri, Drawable drawable, boolean isRequestedDrawable) {
+												callback.onSuccess(drawable);
+											}
+										};
+										ImageManager.create(activity).loadImage(listener, avatarUri);
+									}
+								});
+							}
+						} else {
+							callback.onError(task.getException());
+						}
+					}
+				});
+			}
+
+			@Override
+			protected byte[] transformResult(Drawable drawable) {
+				return drawable == null ? null : drawableToBytes(drawable);
+			}
+		};
 	}
 
 	// Achievements
 
 	@Override
-	public void getAchievements(final ServiceCallback<Iterable<Achievement>> callback) {
-		PendingResult<Achievements.LoadAchievementsResult> intent = Games.Achievements.load(client, true);
-		if (callback != null) {
-			intent.setResultCallback(new ResultCallback<Achievements.LoadAchievementsResult>() {
-				@Override
-				public void onResult(@NonNull Achievements.LoadAchievementsResult loadAchievementsResult) {
-					Status status = loadAchievementsResult.getStatus();
-					ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-					if (status.isSuccess()) {
-						callback.onSuccess(
-								new TransformIterable<com.google.android.gms.games.achievement.Achievement, Achievement>(loadAchievementsResult.getAchievements()) {
-									@Override
-									protected Achievement transform(com.google.android.gms.games.achievement.Achievement item) {
-										return new GooglePlayAchievementWrapper(item);
-									}
-								}, response);
-					} else {
-						callback.onFailure(response);
-					}
-
-				}
-			});
-		}
+	public boolean handlesAchievements() {
+		return true;
 	}
 
 	@Override
-	public void unlockAchievement(String achievementId, final ServiceCallback<Void> callback) {
-		PendingResult<Achievements.UpdateAchievementResult> intent = Games.Achievements.unlockImmediate(client, achievementId);
-		if (callback != null) {
-			intent.setResultCallback(new ResultCallback<Achievements.UpdateAchievementResult>() {
-				@Override
-				public void onResult(@NonNull Achievements.UpdateAchievementResult updateAchievementResult) {
-					Status status = updateAchievementResult.getStatus();
-					ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-					if (status.isSuccess()) {
-						callback.onSuccess(null, response);
-					} else {
-						callback.onFailure(response);
-					}
+	public AsyncServiceResult<Iterable<Achievement>> getAchievements() {
+		return new GooglePlayAsyncServiceResult<AchievementBuffer, Iterable<Achievement>>(
+				achievementsClient.load(false /* force-reload */)
+						.continueWith(resolveAnnotated(AchievementBuffer.class))
+		) {
+			@Override
+			protected Iterable<Achievement> transformResult(AchievementBuffer result) {
+				Array<Achievement> achievements = new Array<>(result.getCount());
+				for (com.google.android.gms.games.achievement.Achievement achievement : result) {
+					achievements.add(new GooglePlayAchievement(achievement));
 				}
-			});
-		}
+				result.release();
+				return achievements;
+			}
+		};
+	}
+
+	@Override
+	public AsyncServiceResult<Void> unlockAchievement(String achievementId) {
+		return new GooglePlayVoidAsyncServiceResult<>(achievementsClient.unlockImmediate(achievementId));
 	}
 
 	// Leaderboards
 
 	@Override
-	public void getPlayerScore(String leaderboardId, LeaderboardOptions options, final ServiceCallback<LeaderboardEntry> callback) {
+	public boolean handlesLeaderboards() {
+		return true;
+	}
+
+	@Override
+	public AsyncServiceResult<LeaderboardEntry> getPlayerScore(String leaderboardId, LeaderboardOptions options) {
 		int collection;
-		if (options != null && options.collection == Collection.Friends) {
+		if (options != null && options.getScope() == Scope.Friends) {
 			collection = LeaderboardVariant.COLLECTION_FRIENDS;
 		} else {
 			collection = LeaderboardVariant.COLLECTION_PUBLIC;
 		}
-		PendingResult<Leaderboards.LoadPlayerScoreResult> intent = Games.Leaderboards
-				.loadCurrentPlayerLeaderboardScore(client, leaderboardId, LeaderboardVariant.TIME_SPAN_ALL_TIME, collection);
-		if (callback != null) {
-			intent.setResultCallback(new ResultCallback<Leaderboards.LoadPlayerScoreResult>() {
-				@Override
-				public void onResult(@NonNull Leaderboards.LoadPlayerScoreResult loadPlayerScoreResult) {
-					ServiceResponse response = new GooglePlayServicesStatusWrapper(loadPlayerScoreResult.getStatus());
-					if (response.isSuccessful()) {
-						LeaderboardScore score = loadPlayerScoreResult.getScore();
-						if (score == null) {
-							callback.onFailure(response);
-						} else {
-							callback.onSuccess(new GooglePlayLeaderboardScoreWrapper(score), response);
-						}
-					} else {
-						callback.onFailure(response);
-					}
-				}
-			});
-		}
+		return new GooglePlayAsyncServiceResult<LeaderboardScore, LeaderboardEntry>(
+				leaderboardsClient.loadCurrentPlayerLeaderboardScore(leaderboardId, LeaderboardVariant.TIME_SPAN_ALL_TIME, collection)
+						.continueWith(resolveAnnotated(LeaderboardScore.class))
+		) {
+			@Override
+			protected LeaderboardEntry transformResult(LeaderboardScore result) {
+				return new GooglePlayLeaderboardEntry(result);
+			}
+		};
 	}
 
 	@Override
-	public void getScores(String leaderboardId, LeaderboardOptions options, final ServiceCallback<Iterable<LeaderboardEntry>> callback) {
+	public AsyncServiceResult<Iterable<LeaderboardEntry>> getScores(String leaderboardId, LeaderboardOptions options) {
 
-		boolean top;
+		boolean playerCentered;
 		int collection;
 		int items;
 
 		if (options == null) {
-			top = true;
+			playerCentered = false;
 			collection = LeaderboardVariant.COLLECTION_PUBLIC;
 			items = 20;
 		} else {
-			Sort sort = options.sort;
-			if (sort == null) {
-				top = true;
-			} else {
-				switch (sort) {
-				case CenteredOnPlayer:
-					top = false;
-					break;
-				case Bottom:
-					error("Sort.Bottom is not available for Google Play, using Sort.Top instead");
-				case Top:
-				default:
-					top = true;
-					break;
-				}
-			}
-			Collection c = options.collection;
-			if (c == Collection.Friends) {
-				collection = LeaderboardVariant.COLLECTION_FRIENDS;
-			} else {
-				collection = LeaderboardVariant.COLLECTION_PUBLIC;
-			}
+			LeaderboardOptions.Window window = options.getWindow();
+			playerCentered = window == LeaderboardOptions.Window.CenteredOnPlayer;
+			Scope scope = options.getScope();
+			collection = scope == Scope.Friends ? LeaderboardVariant.COLLECTION_FRIENDS : LeaderboardVariant.COLLECTION_PUBLIC;
 
-			int perPage = options.itemsPerPage;
+			int perPage = options.getMaxResults();
 			if (perPage > 0)
 				items = perPage;
 			else
 				items = 20;
 		}
 
-		PendingResult<Leaderboards.LoadScoresResult> intent;
+		Task<AnnotatedData<LeaderboardsClient.LeaderboardScores>> task = playerCentered ?
+			leaderboardsClient.loadPlayerCenteredScores(leaderboardId, LeaderboardVariant.TIME_SPAN_ALL_TIME, collection, items) :
+			leaderboardsClient.loadTopScores(leaderboardId, LeaderboardVariant.TIME_SPAN_ALL_TIME, collection, items);
 
-		if (top) {
-			intent = Games.Leaderboards.loadTopScores(client, leaderboardId, LeaderboardVariant.TIME_SPAN_ALL_TIME, collection, items);
-		} else {
-			intent = Games.Leaderboards.loadPlayerCenteredScores(client, leaderboardId, LeaderboardVariant.TIME_SPAN_ALL_TIME, collection, items);
-		}
-
-		if (callback != null) {
-			intent.setResultCallback(new ResultCallback<Leaderboards.LoadScoresResult>() {
-				@Override
-				public void onResult(@NonNull Leaderboards.LoadScoresResult loadScoresResult) {
-					ServiceResponse response = new GooglePlayServicesStatusWrapper(loadScoresResult.getStatus());
-					if (response.isSuccessful()) {
-						callback.onSuccess(
-								new TransformIterable<LeaderboardScore, LeaderboardEntry>(loadScoresResult.getScores()) {
-									@Override
-									protected LeaderboardEntry transform(LeaderboardScore item) {
-										return new GooglePlayLeaderboardScoreWrapper(item);
-									}
-								}, response);
-					} else {
-						callback.onFailure(response);
-					}
+		return new GooglePlayAsyncServiceResult<LeaderboardsClient.LeaderboardScores, Iterable<LeaderboardEntry>>(
+				task.continueWith(resolveAnnotated(LeaderboardsClient.LeaderboardScores.class))) {
+			@Override
+			protected Iterable<LeaderboardEntry> transformResult(LeaderboardsClient.LeaderboardScores result) {
+				Array<LeaderboardEntry> scores = new Array<>(result.getScores().getCount());
+				for (LeaderboardScore score : result.getScores()) {
+					scores.add(new GooglePlayLeaderboardEntry(score));
 				}
-			});
-		}
+				result.release();
+				return scores;
+			}
+		};
 	}
 
 	@Override
-	public void submitScore(String leaderboardId, long score, final ServiceCallback<Void> callback) {
-		PendingResult<Leaderboards.SubmitScoreResult> intent = Games.Leaderboards.submitScoreImmediate(client, leaderboardId, score);
-		if (callback != null) {
-			intent.setResultCallback(new ResultCallback<Leaderboards.SubmitScoreResult>() {
-				@Override
-				public void onResult(@NonNull Leaderboards.SubmitScoreResult submitScoreResult) {
-					Status status = submitScoreResult.getStatus();
-					ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-					if (status.isSuccess()) {
-						callback.onSuccess(null, response);
-					} else {
-						callback.onFailure(response);
-					}
-				}
-			});
-		}
+	public AsyncServiceResult<Void> submitScore(String leaderboardId, long score) {
+		return new GooglePlayVoidAsyncServiceResult<>(leaderboardsClient.submitScoreImmediate(leaderboardId, score));
 	}
 
 	// Saved games
 
 	@Override
-	public void getSavedGames(final ServiceCallback<Iterable<SavedGame>> callback) {
-		PendingResult<Snapshots.LoadSnapshotsResult> intent = Games.Snapshots.load(client, true);
-
-		if (callback != null) {
-			intent.setResultCallback(new ResultCallback<Snapshots.LoadSnapshotsResult>() {
-				@Override
-				public void onResult(@NonNull Snapshots.LoadSnapshotsResult loadSnapshotsResult) {
-					Status status = loadSnapshotsResult.getStatus();
-					ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-					if (status.isSuccess()) {
-						callback.onSuccess(
-								new TransformIterable<SnapshotMetadata, SavedGame>(loadSnapshotsResult.getSnapshots()) {
-									@Override
-									protected SavedGame transform(final SnapshotMetadata item) {
-										return new GooglePlaySnapshotWrapper(item);
-									}
-								}, response);
-					} else {
-						callback.onFailure(response);
-					}
-				}
-			});
-		}
+	public boolean handlesSavedGames() {
+		return true;
 	}
 
 	@Override
-	public void loadSavedGameData(SavedGame save, final ServiceCallback<byte[]> callback) {
-		extractMetadata(save, false, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
+	public AsyncServiceResult<Iterable<SavedGame>> getSavedGames() {
+		return new GooglePlayAsyncServiceResult<SnapshotMetadataBuffer, Iterable<SavedGame>>(
+				snapshotsClient.load(false /* force-reload */)
+						.continueWith(resolveAnnotated(SnapshotMetadataBuffer.class))
+		) {
 			@Override
-			public void onSuccess(SnapshotMetadata metadata, ServiceResponse response) {
+			protected Iterable<SavedGame> transformResult(SnapshotMetadataBuffer result) {
+				Array<SavedGame> savedGames = new Array<>(result.getCount());
+				for (SnapshotMetadata snapshotMetadata : result) {
+					savedGames.add(new GooglePlaySavedGame(snapshotMetadata));
+				}
+				result.release();
+				return savedGames;
+			}
+		};
+	}
 
-				try {
-					PendingResult<Snapshots.OpenSnapshotResult> intent = Games.Snapshots.open(client, metadata, resolutionPolicy);
+	@Override
+	public AsyncServiceResult<byte[]> loadSavedGameData(final SavedGame save) {
+		return new GooglePlayAsyncServiceResult<Snapshot, byte[]>(
+				snapshotsClient.open(save.getTitle(), false, resolutionPolicy).continueWith(resolveDataOrConflict(save, Snapshot.class))
+		) {
+			@Override
+			protected byte[] transformResult(Snapshot result) throws IOException {
+				return result.getSnapshotContents().readFully();
+			}
+		};
+	}
 
-					if (callback != null) {
-						intent.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
+	@Override
+	public AsyncServiceResult<Void> submitSavedGame(final SavedGame save, final byte[] data) {
+		return new GooglePlayVoidAsyncServiceResult<>(
+				snapshotsClient.open(save.getTitle(), true, resolutionPolicy)
+						.continueWith(resolveDataOrConflict(save, Snapshot.class))
+						.continueWithTask(new Continuation<Snapshot, Task<SnapshotMetadata>>() {
 							@Override
-							public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
-								Status status = openSnapshotResult.getStatus();
-								ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-								if (status.isSuccess()) {
-									Snapshot snapshot = openSnapshotResult.getSnapshot();
-									try {
-										// We stop to read all the content
-										byte[] data = snapshot.getSnapshotContents().readFully();
-										callback.onSuccess(data, response);
-									} catch (IOException e) {
-										error(e.getLocalizedMessage());
-										callback.onFailure(response);
-									}
-								} else {
-									callback.onFailure(response);
-								}
-							}
-						});
-					}
-				} catch (Throwable e) {
-					if (callback != null)
-						callback.onFailure(new GooglePlayServicesBasicResponse(false, -1, e.getLocalizedMessage()));
-				}
-			}
+							public Task<SnapshotMetadata> then(@NonNull Task<Snapshot> task) {
+								Snapshot snapshot = task.getResult();
+								snapshot.getSnapshotContents().writeBytes(data);
 
-			@Override
-			public void onFailure(ServiceResponse response) {
-				if (callback != null)
-					callback.onFailure(response);
-			}
-		});
+								SnapshotMetadataChange metadataChange = new SnapshotMetadataChange.Builder()
+										.fromMetadata(snapshot.getMetadata())
+										.setPlayedTimeMillis(save.getPlayedTime())
+										.setDescription(save.getDescription())
+										.build();
+
+								return snapshotsClient.commitAndClose(snapshot, metadataChange);
+							}})
+				);
 	}
 
 	@Override
-	public void submitSavedGame(final SavedGame save, final byte[] data, final ServiceCallback<Void> callback) {
-		extractMetadata(save, true, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
-			@Override
-			public void onSuccess(final SnapshotMetadata properMetadata, ServiceResponse response) {
-				try {
-					// Open metadata in order to get proper objects
-					Games.Snapshots.open(client, save.getTitle(), true, resolutionPolicy)
-							.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
-								@Override
-								public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
-									Status status = openSnapshotResult.getStatus();
-									ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-									if (status.isSuccess()) {
-										// Then and only then will we be able to manipulate our dear Snapshot object
-										Snapshot snapshot = openSnapshotResult.getSnapshot();
-
-										snapshot.getSnapshotContents().writeBytes(data);
-
-										SnapshotMetadataChange metadataChange = new SnapshotMetadataChange.Builder()
-												.fromMetadata(properMetadata)
-												.setPlayedTimeMillis(save.getPlayedTime())
-												.setDescription(save.getDescription())
-												.build();
-
-										try {
-											PendingResult<Snapshots.CommitSnapshotResult> intent = Games.Snapshots.commitAndClose(client, snapshot, metadataChange);
-											if (callback != null) {
-												intent.setResultCallback(new ResultCallback<Snapshots.CommitSnapshotResult>() {
-													@Override
-													public void onResult(@NonNull Snapshots.CommitSnapshotResult commitSnapshotResult) {
-														Status status = commitSnapshotResult.getStatus();
-														ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-														if (status.isSuccess()) {
-															callback.onSuccess(null, response);
-														} else {
-															callback.onFailure(response);
-														}
-													}
-												});
-											}
-										} catch (Throwable e) {
-											if (callback != null)
-												callback.onFailure(new GooglePlayServicesBasicResponse(false, -1, e.getLocalizedMessage()));
-										}
-									} else {
-										callback.onFailure(response);
-									}
-								}
-						});
-				} catch (Throwable e) {
-					if (callback != null)
-						callback.onFailure(new GooglePlayServicesBasicResponse(false, -1, e.getLocalizedMessage()));
-				}
-			}
-
-			@Override
-			public void onFailure(ServiceResponse response) {
-				if (callback != null)
-					callback.onFailure(response);
-			}
-		});
-	}
-
-	@Override
-	public void deleteSavedGame(SavedGame save, final ServiceCallback<Void> callback) {
-		extractMetadata(save, false, resolutionPolicy, new ServiceCallback<SnapshotMetadata>() {
-			@Override
-			public void onSuccess(SnapshotMetadata properMetadata, ServiceResponse response) {
-				try {
-					PendingResult<Snapshots.DeleteSnapshotResult> intent = Games.Snapshots.delete(client, properMetadata);
-
-					if (callback != null) {
-						intent.setResultCallback(new ResultCallback<Snapshots.DeleteSnapshotResult>() {
+	public AsyncServiceResult<Void> deleteSavedGame(SavedGame save) {
+		return new GooglePlayVoidAsyncServiceResult<>(
+				snapshotsClient.open(save.getTitle(), false, resolutionPolicy)
+						.continueWith(resolveDataOrConflict(save, Snapshot.class))
+						.continueWithTask(new Continuation<Snapshot, Task<String>>() {
 							@Override
-							public void onResult(@NonNull Snapshots.DeleteSnapshotResult deleteSnapshotResult) {
-								Status status = deleteSnapshotResult.getStatus();
-								ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-								if (status.isSuccess()) {
-									callback.onSuccess(null, response);
-								} else {
-									callback.onFailure(response);
-								}
+							public Task<String> then(@NonNull Task<Snapshot> task) {
+								return snapshotsClient.delete(task.getResult().getMetadata());
 							}
-						});
-					}
-				} catch (Throwable e) {
-					if (callback != null)
-						callback.onFailure(new GooglePlayServicesBasicResponse(false, -1, e.getLocalizedMessage()));
-				}
-			}
-
-			@Override
-			public void onFailure(ServiceResponse response) {
-				if (callback != null)
-					callback.onFailure(response);
-			}
-		});
-	}
-
-	private void extractMetadata(final SavedGame savedGame, boolean createIfNeeded, int resolutionPolicy, final ServiceCallback<SnapshotMetadata> callback) {
-		if (savedGame instanceof GooglePlaySnapshotWrapper) {
-			callback.onSuccess(((GooglePlaySnapshotWrapper) savedGame).getWrapped(), null);
-		} else {
-			// Open from API in order to get proper metadata (or create if none)
-			Games.Snapshots.open(client, savedGame.getTitle(), createIfNeeded, resolutionPolicy)
-					.setResultCallback(new ResultCallback<Snapshots.OpenSnapshotResult>() {
-						@Override
-						public void onResult(@NonNull Snapshots.OpenSnapshotResult openSnapshotResult) {
-							Status status = openSnapshotResult.getStatus();
-							ServiceResponse response = new GooglePlayServicesStatusWrapper(status);
-							if (status.isSuccess()) {
-								// Then and only then will we be able to manipulate our dear Snapshot object
-								Snapshot snapshot = openSnapshotResult.getSnapshot();
-								SnapshotMetadata metadata = snapshot.getMetadata();
-
-								callback.onSuccess(metadata, response);
-							} else {
-								callback.onFailure(response);
-							}
-						}
-					});
-		}
+						}));
 	}
 
 	// Utilities
-
-	protected void debug(String text) {
-
-	}
-
-	protected void error(String error) {
-
-	}
 
 	private static Bitmap drawableToBitmap(Drawable drawable) {
 		if (drawable instanceof BitmapDrawable)
@@ -752,6 +393,103 @@ public class GooglePlayServicesHandler implements ConnectionHandler, Achievement
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
 		return stream.toByteArray();
+	}
+
+	private static abstract class GooglePlayAsyncServiceResult<TTask, TCallback> implements AsyncServiceResult<TCallback> {
+		private final Task<TTask> task;
+
+		private GooglePlayAsyncServiceResult(Task<TTask> task) {
+			this.task = task;
+		}
+
+		@Override
+		public void onSuccess(final ServiceSuccessCallback<TCallback> callback) {
+			task.addOnSuccessListener(new OnSuccessListener<TTask>() {
+				@Override
+				public void onSuccess(TTask taskResult) {
+					try {
+						succeed(taskResult, callback);
+					} catch (Exception ignored) {}
+				}
+			});
+		}
+
+		@Override
+		public void onError(final ServiceErrorCallback callback) {
+			task.addOnFailureListener(new OnFailureListener() {
+				@Override
+				public void onFailure(@NonNull Exception exception) {
+					fail(exception, callback);
+				}
+			});
+		}
+
+		@Override
+		public void onCompletion(final ServiceCompletionCallback<TCallback> callback) {
+			task.addOnCompleteListener(new OnCompleteListener<TTask>() {
+				@Override
+				public void onComplete(@NonNull Task<TTask> task) {
+					if (task.isSuccessful()) {
+						try {
+							succeed(task.getResult(), callback);
+						} catch (Exception e) {
+							fail(e, callback);
+						}
+					} else {
+						fail(task.getException(), callback);
+					}
+				}
+			});
+		}
+
+		protected abstract TCallback transformResult(TTask result) throws Exception;
+
+		private void succeed(TTask taskResult, ServiceSuccessCallback<TCallback> callback) throws Exception {
+			callback.onSuccess(transformResult(taskResult));
+		}
+
+		private void fail(Exception exception, ServiceErrorCallback callback) {
+			if (exception == null) {
+				callback.onError(SimpleServiceError.error(-1));
+			} else if (exception instanceof ApiException) {
+				callback.onError(new GooglePlayStatusServiceError(((ApiException) exception).getStatus()));
+			} else {
+				callback.onError(new ExceptionServiceError(exception));
+			}
+		}
+	}
+
+	private static class GooglePlayVoidAsyncServiceResult<T> extends GooglePlayAsyncServiceResult<T, Void> {
+		private GooglePlayVoidAsyncServiceResult(Task<T> task) { super(task); }
+		@Override protected Void transformResult(T result) { return null; }
+	}
+
+	private <T> Continuation<SnapshotsClient.DataOrConflict<T>, T> resolveDataOrConflict(final SavedGame save, Class<T> typeHint) {
+		return new Continuation<SnapshotsClient.DataOrConflict<T>, T>() {
+			@Override
+			public T then(@NonNull Task<SnapshotsClient.DataOrConflict<T>> task) {
+				SnapshotsClient.DataOrConflict<T> result = task.getResult();
+				if (result.isConflict()) {
+					throw new RuntimeException("Google Play snapshot " + save.getTitle() + " is in conflict state: " + result.getConflict());
+				} else {
+					return result.getData();
+				}
+			}
+		};
+	}
+
+	private <T> Continuation<AnnotatedData<T>, T> resolveAnnotated(Class<T> typeHint) {
+		return new Continuation<AnnotatedData<T>, T>() {
+			@Override
+			public T then(@NonNull Task<AnnotatedData<T>> task) {
+				T result = task.getResult().get();
+				if (result == null) {
+					throw new RuntimeException("Google Play annotated data is null");
+				} else {
+					return result;
+				}
+			}
+		};
 	}
 
 }

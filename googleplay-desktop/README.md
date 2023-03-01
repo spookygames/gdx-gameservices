@@ -19,8 +19,8 @@ Then, create Google Play Games handler in your platform-specific code. For gener
 Following such core game:
     
     public class MyAwesomeGame implements ApplicationListener {
-        ConnectionHandler services;
-        public MyAwesomeGame(ConnectionHandler services) {
+        GameServicesHandler services;
+        public MyAwesomeGame(GameServicesHandler services) {
             super();
             this.services = services;
         }
@@ -50,10 +50,9 @@ Desktop initialization code is rather straightforward, mind the call to initiali
 
 Instead of a credentials file, you may also directly provide client id and secret as String to another overload of the initialize() method. Do as you please.
 
-## Idiosyncrasies
+## Specificities
 
-* This library uses Google API version 1.22.0.
-* Strong inspiration from the implementation on MrStahlfelge's repo (by mgsx-dev), thank you both!
+* This library uses Google API version 1.32.1.
+* Strong inspiration from the implementation on [MrStahlfelge's repo](https://github.com/MrStahlfelge/gdx-gamesvcs) (by mgsx-dev), thank you both!
 * Browser-based authentication
-* Sort.Bottom is not available for leaderboard entries
 * SavedGame.getDeviceName() returns an empty String

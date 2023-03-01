@@ -24,19 +24,12 @@
 package games.spooky.gdx.gameservices.gamecenter;
 
 import com.badlogic.gdx.utils.Array;
-
-import games.spooky.gdx.gameservices.ConnectionHandler;
-import games.spooky.gdx.gameservices.PlainServiceResponse;
-import games.spooky.gdx.gameservices.ServiceCallback;
-import games.spooky.gdx.gameservices.TransformIterable;
+import games.spooky.gdx.gameservices.*;
 import games.spooky.gdx.gameservices.achievement.Achievement;
-import games.spooky.gdx.gameservices.achievement.AchievementsHandler;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardEntry;
 import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions;
-import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions.Collection;
-import games.spooky.gdx.gameservices.leaderboard.LeaderboardsHandler;
+import games.spooky.gdx.gameservices.leaderboard.LeaderboardOptions.Scope;
 import games.spooky.gdx.gameservices.savedgame.SavedGame;
-import games.spooky.gdx.gameservices.savedgame.SavedGamesHandler;
 import org.robovm.apple.foundation.NSArray;
 import org.robovm.apple.foundation.NSData;
 import org.robovm.apple.foundation.NSError;
@@ -47,10 +40,13 @@ import org.robovm.apple.uikit.UIViewController;
 import org.robovm.objc.block.VoidBlock1;
 import org.robovm.objc.block.VoidBlock2;
 
+import static games.spooky.gdx.gameservices.SyncSuccessServiceResult.sync;
+import static games.spooky.gdx.gameservices.gamecenter.GameCenterSavedGameWrapper.unwrap;
+
 /**
  * Game services handler for Apple Game Center.
  */
-public class GameCenterServicesHandler implements ConnectionHandler, AchievementsHandler, LeaderboardsHandler, SavedGamesHandler {
+public class GameCenterServicesHandler implements GameServicesHandler {
 
 	private final UIViewController viewController;
 
@@ -59,152 +55,129 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public boolean isLoggedIn() {
-		return GKLocalPlayer.getLocalPlayer().isAuthenticated();
+	public AsyncServiceResult<Boolean> isLoggedIn() {
+		return sync(GKLocalPlayer.getLocalPlayer().isAuthenticated());
 	}
 
 	@Override
-	public void login(final ServiceCallback<Void> callback) {
-		if (!isLoggedIn()) {
-			final GKLocalPlayer localPlayer = GKLocalPlayer.getLocalPlayer();
-			localPlayer.setAuthenticateHandler(new VoidBlock2<UIViewController, NSError>() {
-				@Override
-				public void invoke(UIViewController view, NSError nsError) {
-					final GameCenterErrorWrapper response = new GameCenterErrorWrapper(nsError);
-					if (response.isSuccessful()) {
-						if (view != null) {
-							viewController.presentViewController(view, true, null);
-						}
-						debug("Successfully logged into Game Center");
-						callback.onSuccess(null, response);
-					} else {
-						// GameCenter is disabled or operation was cancelled by user
-						error("Game Center account is required");
-						callback.onFailure(response);
-					}
-				}
-			});
-		}
-	}
-
-	@Override
-	public void logout() {
-		// Handled device-wide, not here
-	}
-
-	@Override
-	public String getPlayerId() {
-		return GKLocalPlayer.getLocalPlayer().getTeamPlayerID();
-	}
-
-	@Override
-	public String getPlayerName() {
-		// getAlias() matches expected behavior more than getDisplayName()
-		return GKLocalPlayer.getLocalPlayer().getAlias();
-	}
-
-	@Override
-	public void getPlayerAvatar(final ServiceCallback<byte[]> callback) {
-		GKLocalPlayer.getLocalPlayer().loadPhoto(GKPhotoSize.Normal, new VoidBlock2<UIImage, NSError>() {
+	public AsyncServiceResult<Void> login() {
+		return new GameCenterAsyncServiceResult<UIViewController, Void>() {
 			@Override
-			public void invoke(UIImage image, NSError error) {
-				if (callback == null)
-					return;
-
-				final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
-				if (response.isSuccessful()) {
-					try {
-						byte[] bytes = imageToBytes(image);
-						callback.onSuccess(bytes, response);
-					} catch (Throwable e) {
-						callback.onFailure(PlainServiceResponse.error(e.getMessage()));
-					}
-				} else {
-					callback.onFailure(response);
-				}
-			}
-		});
-	}
-
-	@Override
-	public void getAchievements(final ServiceCallback<Iterable<Achievement>> callback) {
-		
-		GKAchievement.loadAchievements(new VoidBlock2<NSArray<GKAchievement>, NSError>() {
-			@Override
-			public void invoke(NSArray<GKAchievement> achievements, NSError error) {
-				if (callback == null)
-					return;
-				
-            	final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
-            	if (response.isSuccessful()) {
-					Iterable<Achievement> iterable = achievements == null ?
-						new Array<Achievement>(0) :
-						new TransformIterable<GKAchievement, Achievement>(achievements) {
-							@Override
-							protected Achievement transform(GKAchievement item) {
-								return new GameCenterAchievementWrapper(item);
+			protected void call(final VoidBlock2<UIViewController, NSError> block) {
+				final GKLocalPlayer localPlayer = GKLocalPlayer.getLocalPlayer();
+				if (!localPlayer.isAuthenticated()) {
+					localPlayer.setAuthenticateHandler(new VoidBlock2<UIViewController, NSError>() {
+						@Override
+						public void invoke(UIViewController view, NSError nsError) {
+							if (nsError == null) {
+								if (view != null) {
+									viewController.presentViewController(view, true, null);
+								}
 							}
-						};
-					callback.onSuccess(iterable, response);
-            	} else {
-					callback.onFailure(response);
-            	}
+							block.invoke(view, nsError);
+						}
+					});
+				}
 			}
-		});
-	}
 
-	@Override
-	public void unlockAchievement(String achievementId, final ServiceCallback<Void> callback) {
-		
-		GKAchievement achievement = new GKAchievement(achievementId);
-		NSArray<GKAchievement> array = new NSArray<GKAchievement>(achievement);
-		
-		GKAchievement.reportAchievements(array, new VoidBlock1<NSError>() {
 			@Override
-			public void invoke(NSError error) {
-				if (callback == null)
-					return;
-				
-            	final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
-            	if (response.isSuccessful()) {
-					callback.onSuccess(null, response);
-            	} else {
-					callback.onFailure(response);
-            	}
+			protected Void transformResult(UIViewController result) {
+				return null;
 			}
-		});
+		};
 	}
 
 	@Override
-	public void getPlayerScore(String leaderboardId, LeaderboardOptions options, final ServiceCallback<LeaderboardEntry> callback) {
+	public AsyncServiceResult<String> getPlayerId() {
+		return sync(GKLocalPlayer.getLocalPlayer().getTeamPlayerID());
+	}
 
+	@Override
+	public AsyncServiceResult<String> getPlayerName() {
+		// getAlias() matches expected behavior more than getDisplayName()
+		return sync(GKLocalPlayer.getLocalPlayer().getAlias());
+	}
+
+	@Override
+	public AsyncServiceResult<byte[]> getPlayerAvatar() {
+		return new GameCenterAsyncServiceResult<UIImage, byte[]>() {
+			@Override
+			protected void call(VoidBlock2<UIImage, NSError> block) {
+				GKLocalPlayer.getLocalPlayer().loadPhoto(GKPhotoSize.Normal, block);
+			}
+
+			@Override
+			protected byte[] transformResult(UIImage image) {
+				return imageToBytes(image);
+			}
+		};
+	}
+
+	@Override
+	public boolean handlesAchievements() {
+		return true;
+	}
+
+	@Override
+	public AsyncServiceResult<Iterable<Achievement>> getAchievements() {
+		return new GameCenterAsyncServiceResult<NSArray<GKAchievement>, Iterable<Achievement>>() {
+			@Override
+			protected void call(VoidBlock2<NSArray<GKAchievement>, NSError> block) {
+				GKAchievement.loadAchievements(block);
+			}
+
+			@Override
+			protected Iterable<Achievement> transformResult(NSArray<GKAchievement> achievements) {
+				return achievements == null ?
+					new Array<Achievement>(0) :
+					new TransformIterable<GKAchievement, Achievement>(achievements) {
+						@Override
+						protected Achievement transform(GKAchievement item) {
+							return new GameCenterAchievementWrapper(item);
+						}
+					};
+			}
+		};
+	}
+
+	@Override
+	public AsyncServiceResult<Void> unlockAchievement(final String achievementId) {
+		return new GameCenterVoidAsyncServiceResult() {
+			@Override
+			protected void call(VoidBlock1<NSError> block) {
+				GKAchievement achievement = new GKAchievement(achievementId);
+				NSArray<GKAchievement> array = new NSArray<>(achievement);
+				GKAchievement.reportAchievements(array, block);
+			}
+		};
+	}
+
+	@Override
+	public boolean handlesLeaderboards() {
+		return true;
+	}
+
+	@Override
+	public AsyncServiceResult<LeaderboardEntry> getPlayerScore(String leaderboardId, LeaderboardOptions options) {
 		GKLeaderboard leaderboard = getLeaderboard(leaderboardId, options);
-		
 		GKScore score = leaderboard.getLocalPlayerScore();
-		
-		if (callback != null) {
-			if (score != null) {
-				callback.onSuccess(new GameCenterLeaderboardEntryWrapper(score), new PlainServiceResponse(true, 0, null));
-			} else {
-				callback.onFailure(new PlainServiceResponse(false, -1, "No local score found"));
-			}
-		}
+		return score == null ?
+				SyncErrorServiceResult.<LeaderboardEntry>syncError(SimpleServiceError.error("No local score found")) :
+				SyncSuccessServiceResult.<LeaderboardEntry>sync(new GameCenterLeaderboardEntryWrapper(score));
 	}
 
 	@Override
-	public void getScores(String leaderboardId, LeaderboardOptions options, final ServiceCallback<Iterable<LeaderboardEntry>> callback) {
+	public AsyncServiceResult<Iterable<LeaderboardEntry>> getScores(final String leaderboardId, final LeaderboardOptions options) {
+		return new GameCenterAsyncServiceResult<NSArray<GKScore>, Iterable<LeaderboardEntry>>() {
+			@Override
+			protected void call(VoidBlock2<NSArray<GKScore>, NSError> block) {
+				GKLeaderboard leaderboard = getLeaderboard(leaderboardId, options);
+				leaderboard.loadScores(block);
+			}
 
-		GKLeaderboard leaderboard = getLeaderboard(leaderboardId, options);
-		
-		leaderboard.loadScores(new VoidBlock2<NSArray<GKScore>, NSError>() {
-			@Override 
-			public void invoke(NSArray<GKScore> scores, NSError error) {
-				if (callback == null)
-					return;
-
-            	final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
-            	if (response.isSuccessful()) {
-					Iterable<LeaderboardEntry> iterable = scores == null ?
+			@Override
+			protected Iterable<LeaderboardEntry> transformResult(NSArray<GKScore> scores) {
+				return scores == null ?
 						new Array<LeaderboardEntry>(0) :
 						new TransformIterable<GKScore, LeaderboardEntry>(scores) {
 							@Override
@@ -212,30 +185,22 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 								return new GameCenterLeaderboardEntryWrapper(item);
 							}
 						};
-					callback.onSuccess(iterable, response);
-            	} else {
-					callback.onFailure(response);
-            	}
 			}
-		});
+		};
 	}
 
 	@Override
-	public void submitScore(String leaderboardId, long score, ServiceCallback<Void> callback) {
-		GKScore gkScore = new GKScore();
-        gkScore.setLeaderboardIdentifier(leaderboardId);
-        gkScore.setValue(score);
-        
-        NSArray<GKScore> scores = new NSArray<GKScore>(gkScore);
-
-        GKScore.reportScores(scores, new VoidBlock1<NSError>() {
+	public AsyncServiceResult<Void> submitScore(final String leaderboardId, final long score) {
+		return new GameCenterVoidAsyncServiceResult() {
 			@Override
-			public void invoke(NSError error) {
-	            if (error == null) {
-	                debug("Submitted score successfully");
-	            }
+			protected void call(VoidBlock1<NSError> block) {
+				GKScore gkScore = new GKScore();
+				gkScore.setLeaderboardIdentifier(leaderboardId);
+				gkScore.setValue(score);
+				NSArray<GKScore> scores = new NSArray<>(gkScore);
+				GKScore.reportScores(scores, block);
 			}
-		});
+		};
 	}
 	
 	private GKLeaderboard getLeaderboard(String leaderboardId, LeaderboardOptions options) {
@@ -244,12 +209,11 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 		leaderboard.setIdentifier(leaderboardId);
 
 		if (options != null) {
-			if (options.sort != null) {
-				error("Sorting options are not available on Game Center, will use Sort.Top");
-			}
-			Collection c = options.collection;
-			if (c != null) {
-				switch (c) {
+			// Window options are not available on Game Center, will use Window.Top
+
+			Scope scope = options.getScope();
+			if (scope != null) {
+				switch (scope) {
 				case Public:
 					leaderboard.setPlayerScope(GKLeaderboardPlayerScope.Global);
 					break;
@@ -259,9 +223,9 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 				}
 			}
 
-			int perPage = options.itemsPerPage;
-			if (perPage > 0) {
-				leaderboard.setRange(new NSRange(1, perPage));
+			int max = options.getMaxResults();
+			if (max > 0) {
+				leaderboard.setRange(new NSRange(1, max));
 			}
 		}
 		
@@ -269,110 +233,76 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 	}
 
 	@Override
-	public void getSavedGames(final ServiceCallback<Iterable<SavedGame>> callback) {
-		GKLocalPlayer.getLocalPlayer().fetchSavedGames(new VoidBlock2<NSArray<GKSavedGame>, NSError>() {
-			@Override
-			public void invoke(NSArray<GKSavedGame> savedGames, NSError error) {
-				if (callback == null)
-					return;
-				
-            	final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
-            	if (response.isSuccessful()) {
-					Iterable<SavedGame> iterable = savedGames == null ? new Array<SavedGame>(0) : new TransformIterable<GKSavedGame, SavedGame>(savedGames) {
-						@Override
-						protected SavedGame transform(GKSavedGame item) {
-							return new GameCenterSavedGameWrapper(item);
-						}
-					};
-					callback.onSuccess(iterable, response);
-            	} else {
-					callback.onFailure(response);
-            	}
-			}
-		});
+	public boolean handlesSavedGames() {
+		return true;
 	}
 
 	@Override
-	public void loadSavedGameData(SavedGame metadata, final ServiceCallback<byte[]> callback) {
-		GKSavedGame game = extractMetadata(metadata);
-
-		game.loadData(new VoidBlock2<NSData, NSError>() {
+	public AsyncServiceResult<Iterable<SavedGame>> getSavedGames() {
+		return new GameCenterAsyncServiceResult<NSArray<GKSavedGame>, Iterable<SavedGame>>() {
 			@Override
-			public void invoke(NSData data, NSError error) {
-				if (callback == null)
-					return;
-
-				final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
-				if (response.isSuccessful()) {
-					callback.onSuccess(data.getBytes(), response);
-				} else {
-					callback.onFailure(response);
-				}
+			protected void call(VoidBlock2<NSArray<GKSavedGame>, NSError> block) {
+				GKLocalPlayer.getLocalPlayer().fetchSavedGames(block);
 			}
-		});
+
+			@Override
+			protected Iterable<SavedGame> transformResult(NSArray<GKSavedGame> savedGames) {
+				return savedGames == null ? new Array<SavedGame>(0) : new TransformIterable<GKSavedGame, SavedGame>(savedGames) {
+					@Override
+					protected SavedGame transform(GKSavedGame item) {
+						return new GameCenterSavedGameWrapper(item);
+					}
+				};
+			}
+		};
 	}
 
 	@Override
-	public void submitSavedGame(SavedGame savedGame, byte[] data, final ServiceCallback<Void> callback) {
-		NSData nsData = new NSData(data);
-		
-		String id = savedGame.getId();
-		
-		GKLocalPlayer.getLocalPlayer().saveGameData(nsData, id, new VoidBlock2<GKSavedGame, NSError>() {
-			@Override 
-			public void invoke(GKSavedGame savedGame, NSError error) {
-				if (callback == null)
-					return;
-
-				final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
-				if (response.isSuccessful()) {
-					callback.onSuccess(null, response);
-				} else {
-					callback.onFailure(response);
-				}
+	public AsyncServiceResult<byte[]> loadSavedGameData(final SavedGame metadata) {
+		return new GameCenterAsyncServiceResult<NSData, byte[]>() {
+			@Override
+			protected void call(VoidBlock2<NSData, NSError> block) {
+				GKSavedGame game = unwrap(metadata);
+				game.loadData(block);
 			}
-		});
+
+			@Override
+			protected byte[] transformResult(NSData data) {
+				return data.getBytes();
+			}
+		};
 	}
 
 	@Override
-	public void deleteSavedGame(SavedGame savedGame, final ServiceCallback<Void> callback) {
-
-		String id = savedGame.getId();
-
-		GKLocalPlayer.getLocalPlayer().deleteSavedGames(id, new VoidBlock1<NSError>() {
+	public AsyncServiceResult<Void> submitSavedGame(final SavedGame savedGame, final byte[] data) {
+		return new GameCenterAsyncServiceResult<GKSavedGame, Void>() {
 			@Override
-			public void invoke(NSError error) {
-				if (callback == null)
-					return;
-
-				final GameCenterErrorWrapper response = new GameCenterErrorWrapper(error);
-				if (response.isSuccessful()) {
-					callback.onSuccess(null, response);
-				} else {
-					callback.onFailure(response);
-				}
+			protected void call(VoidBlock2<GKSavedGame, NSError> block) {
+				NSData nsData = new NSData(data);
+				String id = savedGame.getId();
+				GKLocalPlayer.getLocalPlayer().saveGameData(nsData, id, block);
 			}
-		});
+
+			@Override
+			protected Void transformResult(GKSavedGame savedGame) {
+				return null;
+			}
+		};
 	}
 
-	private static GKSavedGame extractMetadata(SavedGame savedGame) {
-		if (savedGame instanceof GameCenterSavedGameWrapper) {
-			return ((GameCenterSavedGameWrapper) savedGame).getWrapped();
-		} else {
-			throw new RuntimeException("GameCenterServicesHandler is only able to handle saved games coming from Game Center");
-		}
+	@Override
+	public AsyncServiceResult<Void> deleteSavedGame(final SavedGame savedGame) {
+		return new GameCenterVoidAsyncServiceResult() {
+			@Override
+			protected void call(VoidBlock1<NSError> block) {
+				String id = savedGame.getId();
+				GKLocalPlayer.getLocalPlayer().deleteSavedGames(id, block);
+			}
+		};
 	}
 
 
 	/* Utils */
-
-	protected void debug(String text) {
-
-	}
-
-	protected void error(String error) {
-
-	}
 
 	private static byte[] imageToBytes(UIImage image) {
 		if (image == null)
@@ -383,5 +313,103 @@ public class GameCenterServicesHandler implements ConnectionHandler, Achievement
 		if (data == null)
 			return null;
 		return data.getBytes();
+	}
+
+	static abstract class GameCenterAsyncServiceResultBase<TBlock, TCallback> implements AsyncServiceResult<TCallback> {
+
+		private final Array<ServiceSuccessCallback<TCallback>> successCallbacks = new Array<>();
+		private final Array<ServiceErrorCallback> errorCallbacks = new Array<>();
+
+		protected boolean completed;
+		protected NSError error;
+		protected TBlock result;
+
+		@Override
+		public void onSuccess(ServiceSuccessCallback<TCallback> callback) {
+			synchronized(this) {
+				successCallbacks.add(callback);
+				checkExistingResponse();
+			}
+		}
+
+		@Override
+		public void onError(ServiceErrorCallback callback) {
+			synchronized(this) {
+				errorCallbacks.add(callback);
+				checkExistingResponse();
+			}
+		}
+
+		@Override
+		public void onCompletion(ServiceCompletionCallback<TCallback> callback) {
+			synchronized(this) {
+				successCallbacks.add(callback);
+				errorCallbacks.add(callback);
+				checkExistingResponse();
+			}
+		}
+
+		protected void checkExistingResponse() {
+			if (completed) {
+				if (error != null) {
+					ServiceError serviceError = new GameCenterServiceError(error);
+					for (ServiceErrorCallback callback : errorCallbacks)
+						callback.onError(serviceError);
+				} else {
+					try {
+						TCallback transformed = transformResult(result);
+						for (ServiceSuccessCallback<TCallback> callback : successCallbacks)
+							callback.onSuccess(transformed);
+					} catch (Throwable e) {
+						ServiceError serviceError = new ExceptionServiceError(e);
+						for (ServiceErrorCallback callback : errorCallbacks)
+							callback.onError(serviceError);
+					}
+				}
+			}
+		}
+
+		protected abstract TCallback transformResult(TBlock result);
+	}
+
+	static abstract class GameCenterAsyncServiceResult<TBlock, TCallback> extends GameCenterAsyncServiceResultBase<TBlock, TCallback> {
+
+		protected abstract void call(VoidBlock2<TBlock, NSError> block);
+
+		{
+			call(new VoidBlock2<TBlock, NSError>() {
+				@Override
+				public void invoke(TBlock result, NSError nsError) {
+					synchronized (GameCenterAsyncServiceResult.this) {
+						GameCenterAsyncServiceResult.this.completed = true;
+						GameCenterAsyncServiceResult.this.error = error;
+						GameCenterAsyncServiceResult.this.result = result;
+						checkExistingResponse();
+					}
+				}
+			});
+		}
+	}
+
+	static abstract class GameCenterVoidAsyncServiceResult extends GameCenterAsyncServiceResultBase<Void, Void> {
+
+		@Override
+		protected Void transformResult(Void result) {
+			return result;
+		}
+
+		protected abstract void call(VoidBlock1<NSError> block);
+
+		{
+			call(new VoidBlock1<NSError>() {
+				@Override
+				public void invoke(NSError nsError) {
+					synchronized (GameCenterVoidAsyncServiceResult.this) {
+						GameCenterVoidAsyncServiceResult.this.error = nsError;
+						checkExistingResponse();
+					}
+				}
+			});
+		}
 	}
 }

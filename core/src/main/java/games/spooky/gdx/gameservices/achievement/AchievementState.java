@@ -35,15 +35,15 @@ package games.spooky.gdx.gameservices.achievement;
 public enum AchievementState {
 
 	/**
-	 * Achievement was unlocked by player.
+	 * Achievement was unlocked by the player.
 	 */
 	Unlocked,
 	/**
-	 * Achievement is visible but was not unlocked by player.
+	 * Achievement is visible but was not unlocked by the player.
 	 */
 	Locked,
 	/**
-	 * Achievement was not unlocked by player and is not visible.
+	 * Achievement was not unlocked by the player and is not visible.
 	 */
 	Hidden
 

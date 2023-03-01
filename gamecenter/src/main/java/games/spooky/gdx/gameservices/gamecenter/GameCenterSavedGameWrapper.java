@@ -78,4 +78,12 @@ public class GameCenterSavedGameWrapper implements SavedGame {
 	GKSavedGame getWrapped() {
 		return wrapped;
 	}
+
+	public static GKSavedGame unwrap(SavedGame savedGame) {
+		if (savedGame instanceof GameCenterSavedGameWrapper) {
+			return ((GameCenterSavedGameWrapper) savedGame).getWrapped();
+		} else {
+			throw new RuntimeException("GameCenterServicesHandler is only able to handle saved games coming from Game Center");
+		}
+	}
 }

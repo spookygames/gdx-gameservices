@@ -1,8 +1,7 @@
+apply plugin: 'java-library'
 
-apply plugin: 'java'
-
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
     
@@ -11,16 +10,11 @@ ext {
 }
 
 dependencies {
-    compile project(':core')
+    api project(':core')
 
-    compile "com.google.apis:google-api-services-games:v1-rev20210401-$gapiVersion"
-    compile "com.google.oauth-client:google-oauth-client-jetty:$gapiVersion"
-    compile "com.google.apis:google-api-services-drive:v3-rev20210919-$gapiVersion"
-
-    testCompile project(path: ':core', configuration: 'demo')
-    testCompile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
-    testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-    testCompile "games.spooky.gdx:gdx-nativefilechooser-desktop:$nativefilechooserVersion"
+    implementation "com.google.apis:google-api-services-games:v1-rev20210401-$gapiVersion"
+    implementation "com.google.oauth-client:google-oauth-client-jetty:$gapiVersion"
+    implementation "com.google.apis:google-api-services-drive:v3-rev20210919-$gapiVersion"
 }
 
 archivesBaseName = "$libName-${project.name}"
@@ -28,26 +22,3 @@ archivesBaseName = "$libName-${project.name}"
 license.includes(["**/*.java"])
 
 apply from: "${rootProject.projectDir}/gradle/publish-module.gradle"
-
-// Demo
-ext.demoClass = "games.spooky.gdx.gameservices.demo.googleplay.GdxGameservicesGooglePlayDemoDesktop"
-
-task demo(dependsOn: classes, type: JavaExec) {
-    main = demoClass
-    classpath = sourceSets.test.runtimeClasspath
-    standardInput = System.in
-    setIgnoreExitValue(true)
-}
-
-task demoJar(type: Jar) {
-    classifier 'demo'
-
-    from files(sourceSets.main.output.classesDirs)
-    from sourceSets.test.output
-    from {configurations.compile.collect {zipTree(it)}}
-    from {configurations.testCompile.collect {zipTree(it)}}
-
-    manifest {
-        attributes 'Main-Class': demoClass
-    }
-}

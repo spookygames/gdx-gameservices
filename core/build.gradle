@@ -1,30 +1,15 @@
+apply plugin: 'java-library'
 
-apply plugin: 'java'
-
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 dependencies {
-    compile "com.badlogicgames.gdx:gdx:$gdxVersion"
-    testCompile "games.spooky.gdx:gdx-nativefilechooser:$nativefilechooserVersion"
+    api "com.badlogicgames.gdx:gdx:$gdxVersion"
 }
 
 archivesBaseName = "$libName"
-
-configurations {
-    demo.extendsFrom testRuntime
-}
-
-task demoJar(type: Jar) {
-    classifier 'demo'
-    from sourceSets.test.output
-}
-
-artifacts {
-    demo demoJar
-}
 
 apply from: "${rootProject.projectDir}/gradle/license.gradle"
 license.includes(["**/*.java"])

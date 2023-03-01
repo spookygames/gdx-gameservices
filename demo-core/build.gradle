@@ -1,0 +1,14 @@
+apply plugin: 'java-library'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+dependencies {
+    api project(':core')
+    api "games.spooky.gdx:gdx-nativefilechooser:$nativefilechooserVersion"
+}
+
+apply from: "${rootProject.projectDir}/gradle/license.gradle"
+license.includes(["**/*.java"])

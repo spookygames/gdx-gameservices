@@ -2,12 +2,12 @@
 
 ## Setup
 
-First, add correct dependency to your gradle file as described [here](../README.md#setup) and fill your AndroidManifest.xml file with correct information (**bold lines**):
+First, add correct dependency to your gradle file as described [here](../README.md#setup) and fill your AndroidManifest.xml file with correct information:
     
     <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     
         <uses-sdk
-            android:minSdkVersion="9"
+            android:minSdkVersion="21"
             ... />
     
         <uses-permission android:name="android.permission.INTERNET" />
@@ -27,15 +27,15 @@ Then, create Google Play Games handler in your platform-specific code. For gener
 Following such core game:
     
     public class MyAwesomeGame implements ApplicationListener {
-        ConnectionHandler services;
-        public MyAwesomeGame(ConnectionHandler services) {
+        GameServicesHandler services;
+        public MyAwesomeGame(GameServicesHandler services) {
             super();
             this.services = services;
         }
         ...
     }
 
-Android initialization code needs to use the View object.
+Android initialization is as follows:
 
     public class MyAwesomeGameAndroid extends AndroidApplication {
         @Override
@@ -44,25 +44,16 @@ Android initialization code needs to use the View object.
             ...
               // Create handler
             GooglePlayServicesHandler googlePlay = new GooglePlayServicesHandler();
-            boolean useCloudSaves = true;
             
             // Create game
             MyAwesomeGame game = new MyAwesomeGame(googlePlay);
+
+            initialize(game, new AndroidApplicationConfiguration());
             
-            // Initialize view and handler
-            requestWindowFeature(Window.FEATURE_NO_TITLE);
-            Window window = getWindow();
-            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-            
-            View view = initializeForView(game, new AndroidApplicationConfiguration());
-            googlePlay.setContext(this, view, useCloudSaves);
-            
-            setContentView(graphics.getView(), createLayoutParams());
+            googlePlay.setContext(this);
         }
     }
 
-## Idiosyncrasies
+## Specificities
 
-* This library uses Google's _play-services-games_ version 11.0.4. If a different version is needed, fork the project, bump the version to your liking and you should be good to go.
-* Sort.Bottom is not available for leaderboard entries.
+* This library uses Google's _play-services-games-v2_ version 17.0.0. If a different version is needed, fork the project, bump the version to your liking and you should be good to go.

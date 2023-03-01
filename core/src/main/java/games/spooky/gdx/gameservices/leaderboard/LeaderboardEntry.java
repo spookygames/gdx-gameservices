@@ -56,8 +56,8 @@ public interface LeaderboardEntry {
 	long getRank();
 
 	/**
-	 * Source of this entry. Can be a way to distinguish between several
-	 * different platforms competing on the same leaderboard.
+	 * Source of this entry.
+	 * Can be a way to distinguish between several platforms competing on the same leaderboard.
 	 * 
 	 * @return the source of this entry
 	 */

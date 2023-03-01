@@ -23,7 +23,8 @@
  */
 package games.spooky.gdx.gameservices.leaderboard;
 
-import games.spooky.gdx.gameservices.ServiceCallback;
+import games.spooky.gdx.gameservices.AsyncServiceResult;
+import games.spooky.gdx.gameservices.ServiceCompletionCallback;
 
 public interface LeaderboardsHandler {
 
@@ -33,12 +34,11 @@ public interface LeaderboardsHandler {
 	 * @param leaderboardId
 	 *            id of the leaderboard to get entry from
 	 * @param options
-	 *            leaderboard options, only the {@code collection} field is
+	 *            leaderboard options, only the {@code scope} field is
 	 *            relevant here
-	 * @param callback
-	 *            a ServiceCallback to handle the leaderboard entry
+	 * @return an AsyncServiceResult to handle the leaderboard entry
 	 */
-	void getPlayerScore(String leaderboardId, LeaderboardOptions options, ServiceCallback<LeaderboardEntry> callback);
+	AsyncServiceResult<LeaderboardEntry> getPlayerScore(String leaderboardId, LeaderboardOptions options);
 
 	/**
 	 * Get leaderboard entries for leaderboard of given id.
@@ -47,11 +47,9 @@ public interface LeaderboardsHandler {
 	 *            id of the leaderboard to get entries from
 	 * @param options
 	 *            leaderboard options, all fields relevant
-	 * @param callback
-	 *            a ServiceCallback to handle the Iterable result
+	 * @return an AsyncServiceResult to handle the Iterable result
 	 */
-	void getScores(String leaderboardId, LeaderboardOptions options,
-			ServiceCallback<Iterable<LeaderboardEntry>> callback);
+	AsyncServiceResult<Iterable<LeaderboardEntry>> getScores(String leaderboardId, LeaderboardOptions options);
 
 	/**
 	 * Submit a new entry to the leaderboard of given id.
@@ -60,9 +58,8 @@ public interface LeaderboardsHandler {
 	 *            id of the leaderboard to submit an entry to
 	 * @param score
 	 *            score of the entry to submit
-	 * @param callback
-	 *            a ServiceCallback to handle success/failure
+	 * @return an AsyncServiceResult to handle success/error
 	 */
-	void submitScore(String leaderboardId, long score, ServiceCallback<Void> callback);
+	AsyncServiceResult<Void> submitScore(String leaderboardId, long score);
 
 }

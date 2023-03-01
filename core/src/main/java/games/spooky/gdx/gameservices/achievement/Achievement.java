@@ -23,6 +23,9 @@
  */
 package games.spooky.gdx.gameservices.achievement;
 
+/**
+ * A game service achievement.
+ */
 public interface Achievement {
 
 	/**

@@ -23,19 +23,18 @@
  */
 package games.spooky.gdx.gameservices.savedgame;
 
-import games.spooky.gdx.gameservices.ServiceCallback;
+import games.spooky.gdx.gameservices.AsyncServiceResult;
 
 public interface SavedGamesHandler {
 
 	/**
 	 * Get saved games from game service for current player. SavedGames contain
 	 * metadata only. In order to get save content, call
-	 * {@link #loadSavedGameData(SavedGame, ServiceCallback)}.
+	 * {@link #loadSavedGameData(SavedGame)}.
 	 * 
-	 * @param callback
-	 *            a ServiceCallback to handle the Iterable result
+	 * @return an AsyncServiceResult to handle the Iterable result
 	 */
-	void getSavedGames(ServiceCallback<Iterable<SavedGame>> callback);
+	AsyncServiceResult<Iterable<SavedGame>> getSavedGames();
 
 	/**
 	 * Get saved game data from game service for given saved game. A SavedGame
@@ -45,10 +44,9 @@ public interface SavedGamesHandler {
 	 * 
 	 * @param metadata
 	 *            the metadata of the saved game to retrieve content from
-	 * @param callback
-	 *            a ServiceCallback to handle the byte[] result
+	 * @return an AsyncServiceResult to handle the byte[] result
 	 */
-	void loadSavedGameData(SavedGame metadata, ServiceCallback<byte[]> callback);
+	AsyncServiceResult<byte[]> loadSavedGameData(SavedGame metadata);
 
 	/**
 	 * Submit a game save to game service. Both metadata and raw data are sent
@@ -59,10 +57,9 @@ public interface SavedGamesHandler {
 	 *            the metadata of the saved game to submit
 	 * @param data
 	 *            the content of the saved game to submit
-	 * @param callback
-	 *            a ServiceCallback to handle success/failure
+	 * @return an AsyncServiceResult to handle success/error
 	 */
-	void submitSavedGame(SavedGame savedGame, byte[] data, ServiceCallback<Void> callback);
+	AsyncServiceResult<Void> submitSavedGame(SavedGame savedGame, byte[] data);
 
 	/**
 	 * Delete a game save from game service. Only metadata needed to retrieve
@@ -70,9 +67,8 @@ public interface SavedGamesHandler {
 	 * 
 	 * @param savedGame
 	 *            the metadata of the saved game to delete
-	 * @param callback
-	 *            a ServiceCallback to handle success/failure
+	 * @return an AsyncServiceResult to handle success/error
 	 */
-	void deleteSavedGame(SavedGame savedGame, ServiceCallback<Void> callback);
+	AsyncServiceResult<Void> deleteSavedGame(SavedGame savedGame);
 
 }

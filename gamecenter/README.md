@@ -28,8 +28,8 @@ Then, create Game Center handler in your platform-specific code. For general adv
 Following such core game:
     
     public class MyAwesomeGame implements ApplicationListener {
-        ConnectionHandler services;
-        public MyAwesomeGame(ConnectionHandler services) {
+        GameServicesHandler services;
+        public MyAwesomeGame(GameServicesHandler services) {
             super();
             this.services = services;
         }
@@ -52,10 +52,8 @@ iOS initialization code is quite straightforward:
         }
     }
 
-## Idiosyncrasies
+## Specificities
 
-* Uses mobidevelop's roboVM version 2.3.2.
-* logOut() not implemented
-* getPlayerAvatarUrl() returns `null`
-* Unable to use sorting on leaderboard entries
+* Uses mobidevelop's roboVM version 2.3.14.
+* Unable to center leaderboard entries on player
 
