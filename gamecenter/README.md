@@ -6,6 +6,8 @@ First, add correct dependency to your gradle file as described [here](../README.
 
     <config>
         ...
+        <iosEntitlementsPList>entitlements.plist</iosEntitlementsPList>
+        ...
         <frameworks>
             ...
             <framework>SafariServices</framework>
@@ -22,6 +24,19 @@ First, add correct dependency to your gradle file as described [here](../README.
             <framework>CloudKit</framework>
         </frameworks>
     </config>
+
+With a new or existing file `entitlements.plist` containing at least:
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.game-center</key>
+	<boolean>true</boolean>
+</dict>
+</plist>
+```
 
 Then, create Game Center handler in your platform-specific code. For general advice about such initialization, please refer to [libGDX documentation](https://github.com/libgdx/libgdx/wiki/Interfacing-with-platform-specific-code).
 
