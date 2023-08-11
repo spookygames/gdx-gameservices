@@ -33,10 +33,12 @@ With a new or existing file `entitlements.plist` containing at least:
 <plist version="1.0">
 <dict>
 	<key>com.apple.developer.game-center</key>
-	<boolean>true</boolean>
+	<true/>
 </dict>
 </plist>
 ```
+
+Also, do not forget to add the Game Center capability to your app identifier in Apple's [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/identifiers/list).
 
 Then, create Game Center handler in your platform-specific code. For general advice about such initialization, please refer to [libGDX documentation](https://github.com/libgdx/libgdx/wiki/Interfacing-with-platform-specific-code).
 
